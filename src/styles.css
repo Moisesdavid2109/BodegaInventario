@@ -1,0 +1,12 @@
+body { font-family: Inter, system-ui, Arial, sans-serif; margin:0; padding:0; background:#f7f7f8; color:#222 }
+.app { max-width:1000px; margin:24px auto; padding:16px }
+.nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px }
+.nav h1 { margin:0 }
+.nav nav button { margin-left:8px }
+.nav nav .active { font-weight:700 }
+section { background:white; padding:16px; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.05) }
+.form { display:flex; gap:8px; margin-bottom:12px }
+.form.small { gap:6px; margin-top:8px }
+.form input, .form select { padding:8px; border:1px solid #ddd; border-radius:4px }
+.list { list-style:none; padding:0 }
+.person { border-top:1px dashed #eee; padding-top:8px; margin-top:8px }
