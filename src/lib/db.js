@@ -5,9 +5,9 @@ const LS_KEY = 'bodega_data_v1'
 function read() {
   const raw = localStorage.getItem(LS_KEY)
   if (!raw) {
-    return { products: [], people: [] }
+    return { products: [], people: [], cash: 0, cashTx: [] }
   }
-  try { return JSON.parse(raw) } catch { return { products: [], people: [] } }
+  try { return JSON.parse(raw) } catch { return { products: [], people: [], cash: 0, cashTx: [] } }
 }
 
 function write(data) {
@@ -108,8 +108,30 @@ export function setCash(value) {
 export function addCash(amount) {
   const data = read()
   data.cash = (Number(data.cash) || 0) + Number(amount || 0)
+  data.cashTx = data.cashTx || []
+  data.cashTx.push({ id: uid(), amount: Number(amount || 0), date: new Date().toISOString() })
   write(data)
   return data.cash
+}
+
+export function getCashTransactions() {
+  const data = read()
+  return data.cashTx || []
+}
+
+export function getTodayCashSummary() {
+  const tx = getCashTransactions()
+  const today = new Date().toISOString().slice(0,10)
+  let incomes = 0
+  let expenses = 0
+  tx.forEach(t => {
+    if (!t || !t.date) return
+    if (t.date.slice(0,10) === today) {
+      if (Number(t.amount) > 0) incomes += Number(t.amount)
+      else expenses += Math.abs(Number(t.amount))
+    }
+  })
+  return { incomes, expenses, net: incomes - expenses }
 }
 
 // Note: products are now read directly from `src/data/products.json` when present.

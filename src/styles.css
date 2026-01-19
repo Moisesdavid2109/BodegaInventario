@@ -77,6 +77,26 @@ section { background:transparent; padding:0 }
 .form { display:flex; gap:8px; margin-top:12px }
 .form input { padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02); color:var(--text) }
 
+/* Enhanced person form */
+.person-form{ display:flex; gap:10px; align-items:center; width:100% }
+.person-input{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:12px; background:linear-gradient(180deg,#fff,#fbfdfe); box-shadow:0 6px 18px rgba(11,36,51,0.04); border:1px solid rgba(2,6,14,0.04); flex:1 }
+.person-input .icon-user{ display:inline-flex; align-items:center; justify-content:center }
+.input-person{ border:0; outline:none; background:transparent; font-size:15px; color:var(--text); width:100% }
+
+/* Form actions: add person (larger) + delete (smaller) */
+.form-actions{ display:flex; gap:8px; align-items:center }
+.btn-person-add{ display:inline-flex; align-items:center; gap:8px; justify-content:center; padding:10px 16px; border-radius:12px; background:linear-gradient(90deg,#1aa76b,#00b781); color:#fff; border:none; font-weight:700; box-shadow:0 10px 26px rgba(10,100,70,0.12); cursor:pointer; flex:2; transition:transform .12s ease, box-shadow .12s }
+.btn-person-add:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(10,100,70,0.14) }
+.btn-person-delete{ display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 12px; border-radius:10px; background:transparent; border:1px solid rgba(2,6,14,0.06); color:var(--muted); cursor:pointer; flex:1; transition:background .12s }
+.btn-person-delete:hover{ background:rgba(2,6,14,0.02) }
+
+@media(max-width:520px){
+	.form { flex-direction:column }
+	.form-actions{ width:100%; display:flex; gap:8px }
+	.btn-person-add{ flex:unset; width:100% }
+	.btn-person-delete{ flex:unset; width:100% }
+}
+
 @media(min-width:900px){ .app{ max-width:900px } }
 
 /* Responsive adjustments */
@@ -121,6 +141,32 @@ section { background:transparent; padding:0 }
 .people { display:flex; flex-direction:column; gap:12px; margin-top:12px }
 .person { background:var(--card); border:1px solid rgba(2,6,14,0.04); padding:12px; border-radius:12px; display:flex; align-items:center; gap:12px }
 .person .avatar { width:56px; height:56px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0 }
+
+/* Daily summary specific styles */
+.daily-summary{ margin-top:16px; display:flex; gap:12px; align-items:center; justify-content:space-between }
+.daily-summary h3{ margin:0 0 6px 0; font-size:15px }
+.daily-summary .summary-rows{ display:flex; flex-direction:column; gap:8px; flex:1 }
+.summary-row{ display:flex; justify-content:space-between; align-items:center; font-size:14px }
+.summary-row .income{ color:var(--accent); font-weight:700 }
+.summary-row .expense{ color:#e74c3c; font-weight:700 }
+.daily-summary .chart{ width:120px; height:56px; display:flex; align-items:center; justify-content:center }
+.daily-summary .chart svg{ width:100%; height:100%; display:block }
+
+.daily-summary .chart-net{ margin-top:6px; font-size:13px; color:var(--accent); text-align:center; font-weight:700 }
+.daily-summary .chart svg rect{ transition:opacity .18s ease, transform .18s ease }
+.daily-summary .chart svg rect:hover{ transform:translateY(-4px); opacity:1 }
+
+/* Mountain (area) chart styles */
+.daily-summary .chart svg polygon{ filter:drop-shadow(0 6px 14px rgba(11,36,51,0.08)); }
+.daily-summary .chart svg polyline{ transition:stroke-dashoffset .24s ease, opacity .18s ease }
+.daily-summary .chart svg circle{ transition:transform .12s ease }
+.daily-summary .chart svg circle:hover{ transform:scale(1.2) }
+.daily-summary .chart-net{ margin-top:6px; font-size:13px; color:var(--accent); text-align:center; font-weight:700 }
+
+@media(max-width:520px){
+  .daily-summary{ flex-direction:column; align-items:stretch }
+  .daily-summary .chart{ width:100%; height:64px }
+}
 .person .avatar img{ width:100%; height:100%; object-fit:cover }
 .person .info { flex:1; min-width:0 }
 .person h3{ margin:0 0 6px 0; font-size:16px }
@@ -143,6 +189,20 @@ section { background:transparent; padding:0 }
 
 /* Slightly stronger card look for list to mimic image but light */
 .person { background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,251,0.95)); box-shadow:0 6px 20px rgba(11,36,51,0.04) }
+
+/* Inline input for header add/sub */
+.inline-input{ display:flex; gap:8px; align-items:center; margin-top:10px; width:100%; max-width:420px }
+.inline-input input{ flex:1; padding:10px 12px; border-radius:10px; border:1px solid rgba(2,6,14,0.06); background: #fff; font-size:16px }
+.inline-actions{ display:flex; gap:8px }
+.inline-actions .confirm{ background:var(--accent); color:#fff; border:none; padding:8px 12px; border-radius:10px; cursor:pointer }
+.inline-actions .cancel{ background:transparent; border:1px solid rgba(2,6,14,0.06); padding:8px 12px; border-radius:10px; cursor:pointer }
+
+/* Per-person inline input */
+.person-inline{ display:flex; gap:8px; align-items:center }
+.person-inline input{ padding:8px 10px; border-radius:8px; border:1px solid rgba(2,6,14,0.06); width:120px }
+.person-inline-actions{ display:flex; gap:6px }
+.person-inline-actions .confirm{ background:var(--accent); color:#fff; border:none; padding:6px 10px; border-radius:8px; cursor:pointer }
+.person-inline-actions .cancel{ background:transparent; border:1px solid rgba(2,6,14,0.06); padding:6px 10px; border-radius:8px; cursor:pointer }
 
 
 @media (max-width:520px){
