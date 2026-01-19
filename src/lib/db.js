@@ -1,9 +1,12 @@
 // Capa de datos simple: usa localStorage por defecto. Puedes conectar Firestore en src/firebase.js
+import defaultData from '../data/products.json'
 const LS_KEY = 'bodega_data_v1'
 
 function read() {
   const raw = localStorage.getItem(LS_KEY)
-  if (!raw) return { products: [], people: [] }
+  if (!raw) {
+    return { products: [], people: [] }
+  }
   try { return JSON.parse(raw) } catch { return { products: [], people: [] } }
 }
 
@@ -16,12 +19,29 @@ function uid() {
 }
 
 export function getProducts() {
+  // Prefer products from JSON seed if available (no need to clear localStorage)
+  if (defaultData && Array.isArray(defaultData.products) && defaultData.products.length > 0) {
+    return (defaultData.products || []).map(p => ({
+      id: p.id || uid(),
+      name: p.name || p.nombre || 'Producto',
+      price: p.price ?? p.precio ?? null,
+      category: p.category || p.categoria || 'General',
+      sku: p.sku || p.SKU || null,
+      image: p.image || p.imagen || null
+    }))
+  }
   return read().products
 }
 
 export function addProduct(prod) {
   const data = read()
-  const item = { id: uid(), name: prod.name, price: prod.price || 0 }
+  const item = {
+    id: uid(),
+    name: prod.name,
+    price: prod.price || 0,
+    category: prod.category || 'General',
+    sku: prod.sku || null
+  }
   data.products.push(item)
   write(data)
   return item
@@ -65,3 +85,31 @@ export function addDebt(personId, debt) {
 export function clearAll() {
   localStorage.removeItem(LS_KEY)
 }
+
+export function clearPeople() {
+  const data = read()
+  data.people = []
+  write(data)
+}
+
+// Cash / saldo global simple
+export function getCash() {
+  const data = read()
+  return Number(data.cash) || 0
+}
+
+export function setCash(value) {
+  const data = read()
+  data.cash = Number(value) || 0
+  write(data)
+  return data.cash
+}
+
+export function addCash(amount) {
+  const data = read()
+  data.cash = (Number(data.cash) || 0) + Number(amount || 0)
+  write(data)
+  return data.cash
+}
+
+// Note: products are now read directly from `src/data/products.json` when present.
