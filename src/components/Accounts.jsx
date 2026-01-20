@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as db from '../lib/db'
 
 function fmt(n){
@@ -7,31 +7,37 @@ function fmt(n){
   return nf.format(Number(n))
 }
 
-export default function Accounts({ people = [], products = [], onChange }) {
+export default function Accounts({ people = [], products = [], onChange, saldo, setSaldo, resumenDiario, setResumenDiario }) {
   const [personName, setPersonName] = useState('')
-  const [cash, setCash] = useState(() => db.getCash())
   const [inlineMode, setInlineMode] = useState(null) // 'add' | 'sub' | null
   const [inlineValue, setInlineValue] = useState('')
+  const [firebaseAvailable, setFirebaseAvailable] = useState(false)
+  const [loadError, setLoadError] = useState(null)
 
-  const totalAll = () => cash
+  const totalAll = () => saldo
 
-  const refreshCash = () => setCash(db.getCash())
+  // Cuando cambie el saldo en la base local, actualiza el global
+  const refreshCash = async () => {
+    const c = await db.getCash()
+    setSaldo && setSaldo(c)
+  }
 
   const openInline = (mode) => {
     setInlineMode(mode)
     setInlineValue('')
   }
 
-  const confirmInline = () => {
+  const confirmInline = async () => {
     if (!inlineValue) return
     const value = parseFloat(inlineValue.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
     const amt = inlineMode === 'add' ? Math.abs(value) : -Math.abs(value)
-    db.addCash(amt)
-    refreshCash()
+    await db.addCash(amt)
+    await refreshCash()
+    await refreshTx()
     setInlineMode(null)
     setInlineValue('')
-    onChange && onChange()
+    onChange && await onChange()
   }
 
   const cancelInline = () => {
@@ -39,37 +45,37 @@ export default function Accounts({ people = [], products = [], onChange }) {
     setInlineValue('')
   }
 
-  const removeAllPeople = () => {
+  const removeAllPeople = async () => {
     if (!confirm('¿Borrar todas las personas? Esta acción no se puede deshacer.')) return
-    db.clearPeople()
-    onChange && onChange()
+    await db.clearPeople()
+    onChange && await onChange()
   }
 
-  const addPerson = () => {
+  const addPerson = async () => {
     if (!personName) return
-    db.addPerson({ name: personName })
+    await db.addPerson({ name: personName })
     setPersonName('')
-    onChange()
+    onChange && await onChange()
   }
 
-  const addQuick = (personId) => {
+  const addQuick = async (personId) => {
     // kept for backward compat if called elsewhere
     const raw = prompt('Ingrese monto a agregar (número):', '0')
     if (!raw) return
     const value = parseFloat(raw.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
-    db.addDebt(personId, { productId: null, amount: value, date: new Date().toISOString() })
-    onChange && onChange()
+    await db.addDebt(personId, { productId: null, amount: value, date: new Date().toISOString() })
+    onChange && await onChange()
   }
 
-  const subQuick = (personId) => {
+  const subQuick = async (personId) => {
     const raw = prompt('Ingrese monto a descontar (número):', '0')
     if (!raw) return
     const value = parseFloat(raw.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
     // store negative amount as payment
-    db.addDebt(personId, { productId: null, amount: -Math.abs(value), date: new Date().toISOString() })
-    onChange && onChange()
+    await db.addDebt(personId, { productId: null, amount: -Math.abs(value), date: new Date().toISOString() })
+    onChange && await onChange()
   }
 
   const totalFor = (p) => {
@@ -85,21 +91,69 @@ export default function Accounts({ people = [], products = [], onChange }) {
     setPersonInlineValue('')
   }
 
-  const confirmPersonInline = (personId) => {
+  const confirmPersonInline = async (personId) => {
     if (!personInlineValue) return
     const value = parseFloat(personInlineValue.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
     const amt = personInline.mode === 'add' ? Math.abs(value) : -Math.abs(value)
-    db.addDebt(personId, { productId: null, amount: amt, date: new Date().toISOString() })
+    await db.addDebt(personId, { productId: null, amount: amt, date: new Date().toISOString() })
     setPersonInline({ personId: null, mode: null })
     setPersonInlineValue('')
-    onChange && onChange()
+    onChange && await onChange()
   }
+
+  // cash tx / summary
+  const [cashTx, setCashTx] = useState([])
+  // El resumen diario global viene de App.jsx
+
+  const [todaySummary, _setTodaySummary] = useState({ incomes:0, expenses:0, net:0 })
+  const refreshTx = async () => {
+    try {
+      const tx = await db.getCashTransactions()
+      setCashTx(tx || [])
+      const s = await db.getTodayCashSummary()
+      setResumenDiario && setResumenDiario({
+        ingresos: s.incomes || 0,
+        gastos: s.expenses || 0,
+        diferencia: s.net || 0
+      })
+      _setTodaySummary(s || { incomes:0, expenses:0, net:0 })
+    } catch (err) {
+      console.warn('[Accounts] error refreshTx', err)
+      setLoadError(err.message || String(err))
+      setCashTx([])
+      setResumenDiario && setResumenDiario({ ingresos:0, gastos:0, diferencia:0 })
+      _setTodaySummary({ incomes:0, expenses:0, net:0 })
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        // Modo local: no hay conexión en la nube por defecto
+        setFirebaseAvailable(false)
+        await refreshCash()
+        await refreshTx()
+      } catch (err) {
+        console.warn('[Accounts] inicializando datos:', err)
+        setLoadError(err && err.message ? err.message : String(err))
+        if (mounted) {
+          setCashTx([])
+          setTodaySummary({ incomes:0, expenses:0, net:0 })
+        }
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
 
   const cancelPersonInline = () => {
     setPersonInline({ personId: null, mode: null })
     setPersonInlineValue('')
   }
+
+  // Guardado / sincronización
+  // Sincronización/export/import: removido (botones eliminados)
 
   return (
     <section>
@@ -109,6 +163,7 @@ export default function Accounts({ people = [], products = [], onChange }) {
           <button className="btn-add" onClick={()=>openInline('add')}>+ Añadir</button>
           <button className="btn-sub" onClick={()=>openInline('sub')}>− Restar</button>
         </div>
+
 
         {inlineMode && (
           <div className="inline-input">
@@ -121,12 +176,28 @@ export default function Accounts({ people = [], products = [], onChange }) {
         )}
       </div>
 
+      
+
+      {/* Show simple status when Firestore not available (non-alarm) */}
+      {!firebaseAvailable && !loadError && (
+        <div style={{padding:'8px 12px', fontSize:13, color: '#666'}}>Modo local (sin sincronización en la nube)</div>
+      )}
+
+      {/* If there is a loadError, show it but prefer friendly message when it's just 'No Firestore disponible' */}
+      {loadError && (
+        <div style={{padding:'8px 12px', fontSize:13, color: 'crimson'}}>
+          {loadError.includes('No Firestore disponible') || loadError.includes('Permission') ? 'Modo local: no se pudo conectar al servicio en la nube.' : ('Error al cargar datos: ' + loadError)}
+        </div>
+      )}
+
+      {loadError && (
+        <div style={{padding:'8px 12px', fontSize:13, color: 'crimson'}}>Error al cargar datos: {loadError}</div>
+      )}
+
       <div className="daily-summary panel">
         <h3>Resumen Diario</h3>
         {(() => {
-          // build small multi-day mountain chart based on recent cash transactions
-          const tx = db.getCashTransactions() || []
-          // group by last 5 days (incl today)
+          const tx = cashTx || []
           const days = []
           for (let i = 4; i >= 0; i--) {
             const d = new Date()
@@ -140,12 +211,12 @@ export default function Accounts({ people = [], products = [], onChange }) {
           const max = Math.max(...nets.map(n=>Math.abs(n)), 1)
           const scaled = nets.map(n => Math.round((Math.abs(n) / max) * 48))
           const todayNet = nets[nets.length - 1] || 0
-          const s = db.getTodayCashSummary()
+          const s = todaySummary || { incomes:0, expenses:0 }
           return (
             <>
               <div className="summary-rows">
-                <div className="summary-row"><span>Ingresos Hoy</span><span className="income">{fmt(s.incomes)}</span></div>
-                <div className="summary-row"><span>Gastos Hoy</span><span className="expense">{fmt(s.expenses)}</span></div>
+                <div className="summary-row"><span>Ingresos Hoy</span><span className="income">{fmt(resumenDiario?.ingresos ?? 0)}</span></div>
+                <div className="summary-row"><span>Gastos Hoy</span><span className="expense">{fmt(resumenDiario?.gastos ?? 0)}</span></div>
               </div>
               <div className="chart" aria-hidden>
                 <svg viewBox="0 0 120 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -210,7 +281,7 @@ export default function Accounts({ people = [], products = [], onChange }) {
         {people.map(p => (
           <div key={p.id} className="person">
             <div className="avatar">
-              <img src={`https://picsum.photos/seed/${encodeURIComponent(p.id)}/200/200`} alt={p.name} />
+              <img src="https://media.istockphoto.com/id/2151669184/es/vector/ilustraci%C3%B3n-plana-vectorial-en-escala-de-grises-avatar-perfil-de-usuario-icono-de-persona.jpg?s=612x612&w=0&k=20&c=H3j0PHImJLL8wzUGOwsmgNORb7i27eNQr1uQUyTefCA=" alt={p.name} />
             </div>
             <div className="info">
               <h3>{p.name}</h3>

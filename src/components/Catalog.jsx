@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from 'react'
+import defaultData from '../data/products.json'
 
-export default function Catalog({ products = [] }) {
+export default function Catalog({ products = [], saldo, onSaldoChange }) {
   const [query, setQuery] = useState('')
-  const categories = ['General','Limpieza','Viveres','Dulces','Papeleria']
+  const categories = ['General','Limpieza','Viveres','Dulces']
   const [category, setCategory] = useState('General')
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
-    let list = (products || []).map(p => ({
+    const source = (products && products.length) ? products : (defaultData && defaultData.products ? defaultData.products : [])
+    let list = (source || []).map(p => ({
       id: p.id || p.name || Math.random().toString(36).slice(2,8),
       name: p.name || p.nombre,
       category: p.category || p.categoria || 'General',
@@ -18,6 +20,10 @@ export default function Catalog({ products = [] }) {
     if (!q) return list
     return list.filter(p => (p.name||'').toLowerCase().includes(q))
   }, [products, query, category])
+
+  // debug: cuántos visibles
+  console.log('[Catalog] visible products:', visible.length)
+
 
   return (
     <section>
@@ -32,6 +38,8 @@ export default function Catalog({ products = [] }) {
             <button key={c} className={"cat-btn" + (category===c? ' active':'')} onClick={()=>setCategory(c)}>{c}</button>
           ))}
         </div>
+
+        {/* ...el saldo y los botones de añadir/restar han sido eliminados del catálogo... */}
 
         <ul className="catalog-list">
           {visible.map(p => (
