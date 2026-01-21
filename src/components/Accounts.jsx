@@ -7,7 +7,7 @@ function fmt(n){
   return nf.format(Number(n))
 }
 
-export default function Accounts({ people = [], products = [], onChange, saldo, setSaldo, resumenDiario, setResumenDiario }) {
+export default function Accounts({ people = [], products = [], onChange, saldo, setSaldo, resumenDiario, setResumenDiario, uid }) {
   const [personName, setPersonName] = useState('')
   const [inlineMode, setInlineMode] = useState(null) // 'add' | 'sub' | null
   const [inlineValue, setInlineValue] = useState('')
@@ -17,9 +17,9 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
   const totalAll = () => saldo
 
   // Cuando cambie el saldo en la base local, actualiza el global
+  // El saldo ya viene por props, no se consulta local
   const refreshCash = async () => {
-    const c = await db.getCash()
-    setSaldo && setSaldo(c)
+    // No hace nada, el saldo viene de Firestore
   }
 
   const openInline = (mode) => {
@@ -27,14 +27,35 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
     setInlineValue('')
   }
 
+  // Añadir/restar dinero al saldo y actualizar resumen diario
   const confirmInline = async () => {
     if (!inlineValue) return
     const value = parseFloat(inlineValue.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
-    const amt = inlineMode === 'add' ? Math.abs(value) : -Math.abs(value)
-    await db.addCash(amt)
-    await refreshCash()
-    await refreshTx()
+    let nuevoSaldo = saldo;
+    let nuevoResumen = { ...resumenDiario };
+    if (inlineMode === 'add') {
+      nuevoSaldo = saldo + value;
+      nuevoResumen.ingresos = (resumenDiario?.ingresos || 0) + value;
+    } else if (inlineMode === 'sub') {
+      nuevoSaldo = saldo - value;
+      nuevoResumen.gastos = (resumenDiario?.gastos || 0) + value;
+    }
+    // Recalcular diferencia: ingresos totales menos gastos totales
+    const ingresos = nuevoResumen.ingresos || 0;
+    const gastos = nuevoResumen.gastos || 0;
+    nuevoResumen.diferencia = ingresos - gastos;
+    setSaldo(nuevoSaldo)
+    setResumenDiario(nuevoResumen)
+    // Guardar el nuevo saldo y resumen en Firestore
+    const estado = {
+      saldo: nuevoSaldo,
+      resumenDiario: nuevoResumen,
+      clientes: people,
+      uid
+    }
+    const { guardarEstadoGestor } = await import('../gestorFirestore')
+    await guardarEstadoGestor(estado)
     setInlineMode(null)
     setInlineValue('')
     onChange && await onChange()
@@ -53,19 +74,27 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
 
   const addPerson = async () => {
     if (!personName) return
-    await db.addPerson({ name: personName })
-    setPersonName('')
-    onChange && await onChange()
+    try {
+      await db.addPerson({ name: personName }, uid)
+      setPersonName('')
+      onChange && await onChange()
+    } catch (e) {
+      alert('Error al agregar persona: ' + (e.message || e))
+    }
   }
 
   const addQuick = async (personId) => {
-    // kept for backward compat if called elsewhere
     const raw = prompt('Ingrese monto a agregar (número):', '0')
     if (!raw) return
     const value = parseFloat(raw.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
-    await db.addDebt(personId, { productId: null, amount: value, date: new Date().toISOString() })
-    onChange && await onChange()
+    try {
+      await db.addDebt(personId, { productId: null, amount: value, date: new Date().toISOString() }, uid)
+      // Refrescar todo el estado global
+      onChange && await onChange()
+    } catch (e) {
+      alert('Error al agregar deuda: ' + (e.message || e))
+    }
   }
 
   const subQuick = async (personId) => {
@@ -73,9 +102,13 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
     if (!raw) return
     const value = parseFloat(raw.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
-    // store negative amount as payment
-    await db.addDebt(personId, { productId: null, amount: -Math.abs(value), date: new Date().toISOString() })
-    onChange && await onChange()
+    try {
+      await db.addDebt(personId, { productId: null, amount: -Math.abs(value), date: new Date().toISOString() }, uid)
+      // Refrescar todo el estado global
+      onChange && await onChange()
+    } catch (e) {
+      alert('Error al descontar deuda: ' + (e.message || e))
+    }
   }
 
   const totalFor = (p) => {
@@ -96,10 +129,15 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
     const value = parseFloat(personInlineValue.replace(',', '.'))
     if (Number.isNaN(value)) return alert('Monto inválido')
     const amt = personInline.mode === 'add' ? Math.abs(value) : -Math.abs(value)
-    await db.addDebt(personId, { productId: null, amount: amt, date: new Date().toISOString() })
-    setPersonInline({ personId: null, mode: null })
-    setPersonInlineValue('')
-    onChange && await onChange()
+    try {
+      await db.addDebt(personId, { productId: null, amount: amt, date: new Date().toISOString() }, uid)
+      setPersonInline({ personId: null, mode: null })
+      setPersonInlineValue('')
+      // Refrescar todo el estado global
+      onChange && await onChange()
+    } catch (e) {
+      alert('Error al modificar deuda: ' + (e.message || e))
+    }
   }
 
   // cash tx / summary
@@ -107,24 +145,11 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
   // El resumen diario global viene de App.jsx
 
   const [todaySummary, _setTodaySummary] = useState({ incomes:0, expenses:0, net:0 })
+  // refreshTx deshabilitado, ya que no hay movimientos de caja independientes
   const refreshTx = async () => {
-    try {
-      const tx = await db.getCashTransactions()
-      setCashTx(tx || [])
-      const s = await db.getTodayCashSummary()
-      setResumenDiario && setResumenDiario({
-        ingresos: s.incomes || 0,
-        gastos: s.expenses || 0,
-        diferencia: s.net || 0
-      })
-      _setTodaySummary(s || { incomes:0, expenses:0, net:0 })
-    } catch (err) {
-      console.warn('[Accounts] error refreshTx', err)
-      setLoadError(err.message || String(err))
-      setCashTx([])
-      setResumenDiario && setResumenDiario({ ingresos:0, gastos:0, diferencia:0 })
-      _setTodaySummary({ incomes:0, expenses:0, net:0 })
-    }
+    setCashTx([])
+    // No borrar el resumen diario aquí
+    _setTodaySummary({ incomes:0, expenses:0, net:0 })
   }
 
   useEffect(() => {
@@ -196,65 +221,37 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
 
       <div className="daily-summary panel">
         <h3>Resumen Diario</h3>
-        {(() => {
-          const tx = cashTx || []
-          const days = []
-          for (let i = 4; i >= 0; i--) {
-            const d = new Date()
-            d.setDate(d.getDate() - i)
-            days.push(d.toISOString().slice(0,10))
-          }
-          const nets = days.map(day => {
-            const dayTx = tx.filter(t => t && t.date && t.date.slice(0,10) === day)
-            return dayTx.reduce((s,t) => s + (Number(t.amount)||0), 0)
-          })
-          const max = Math.max(...nets.map(n=>Math.abs(n)), 1)
-          const scaled = nets.map(n => Math.round((Math.abs(n) / max) * 48))
-          const todayNet = nets[nets.length - 1] || 0
-          const s = todaySummary || { incomes:0, expenses:0 }
-          return (
-            <>
-              <div className="summary-rows">
-                <div className="summary-row"><span>Ingresos Hoy</span><span className="income">{fmt(resumenDiario?.ingresos ?? 0)}</span></div>
-                <div className="summary-row"><span>Gastos Hoy</span><span className="expense">{fmt(resumenDiario?.gastos ?? 0)}</span></div>
-              </div>
-              <div className="chart" aria-hidden>
-                <svg viewBox="0 0 120 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" role="img">
-                  <defs>
-                    <linearGradient id="mountainGrad" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#5fb7ff" stopOpacity="0.95" />
-                      <stop offset="100%" stopColor="#1f6fbf" stopOpacity="0.12" />
-                    </linearGradient>
-                    <linearGradient id="mountainStroke" x1="0" x2="1">
-                      <stop offset="0%" stopColor="#60a5fa" />
-                      <stop offset="100%" stopColor="#2563eb" />
-                    </linearGradient>
-                  </defs>
-                  {(() => {
-                    const pts = scaled.map((h, idx) => {
-                      const x = 8 + idx * 22
-                      const y = 56 - h
-                      return { x, y }
-                    })
-                    const firstX = pts[0].x
-                    const lastX = pts[pts.length - 1].x
-                    const polygonPoints = pts.map(p => `${p.x},${p.y}`).join(' ') + ` ${lastX},56 ${firstX},56`
-                    const polylinePoints = pts.map(p => `${p.x},${p.y}`).join(' ')
-                    const todayPt = pts[pts.length - 1]
-                    return (
-                      <>
-                        <polygon points={polygonPoints} fill="url(#mountainGrad)" />
-                        <polyline points={polylinePoints} fill="none" stroke="url(#mountainStroke)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx={todayPt.x} cy={todayPt.y} r="3.6" fill="#08469a" stroke="#fff" strokeWidth="1" />
-                      </>
-                    )
-                  })()}
-                </svg>
-                <div className="chart-net">{todayNet >= 0 ? '+' : ''}{fmt(todayNet)} Hoy</div>
-              </div>
-            </>
-          )
-        })()}
+        <div className="summary-rows">
+          <div className="summary-row"><span>Ingresos Hoy</span><span className="income">{fmt(resumenDiario?.ingresos ?? 0)}</span></div>
+          <div className="summary-row"><span>Gastos Hoy</span><span className="expense">{fmt(resumenDiario?.gastos ?? 0)}</span></div>
+        </div>
+        <div className="chart" aria-hidden>
+          <svg viewBox="0 0 120 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" role="img">
+            <defs>
+              <linearGradient id="mountainGrad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="#5fb7ff" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#1f6fbf" stopOpacity="0.12" />
+              </linearGradient>
+              <linearGradient id="mountainStroke" x1="0" x2="1">
+                <stop offset="0%" stopColor="#60a5fa" />
+                <stop offset="100%" stopColor="#2563eb" />
+              </linearGradient>
+            </defs>
+            {/* Gráfica de montaña: la línea y el punto reflejan la diferencia */}
+            {(() => {
+              // Rango visual: diferencia entre -maxDiff y +maxDiff
+              const maxDiff = 48;
+              const diff = Math.max(-maxDiff, Math.min(maxDiff, resumenDiario?.diferencia ?? 0));
+              // y=28 es el centro, sube o baja según la diferencia
+              const y = 28 - (diff / maxDiff) * 20;
+              return <>
+                <polyline points={`8,${y} 32,${y} 56,${y} 80,${y} 104,${y}`} fill="none" stroke="url(#mountainStroke)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx={60} cy={y} r="3.6" fill="#08469a" stroke="#fff" strokeWidth="1" />
+              </>;
+            })()}
+          </svg>
+          <div className="chart-net">{resumenDiario?.diferencia >= 0 ? '+' : ''}{fmt(resumenDiario?.diferencia ?? 0)} Hoy</div>
+        </div>
       </div>
 
       <h2>Clientes que deben</h2>

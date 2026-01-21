@@ -1,34 +1,39 @@
+// src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-// Configuración de tu app de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyA8seBuRxhLqUoSHaA_2gYIv_YKnjxAw",
+  apiKey: "AIzaSyA0esBuRxhl0AgUoSHaA_z9yIv_YKnjxAw",
   authDomain: "bodegalista-56515.firebaseapp.com",
   projectId: "bodegalista-56515",
-  storageBucket: "bodegalista-56515.appspot.com",
+  storageBucket: "bodegalista-56515.appspot.com", // <-- CORREGIDO
   messagingSenderId: "911683513197",
   appId: "1:911683513197:web:334de18b7e325565d4c864",
-  measurementId: "G-QN38RJF8ZT"
+  measurementId: "G-QN38RJFB2T"
 };
 
-// Inicializa Firebase solo una vez
 let app = null;
 let db = null;
+let auth = null;
 
 export function initFirebase() {
   if (!app) {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+    auth = getAuth(app);
   }
   return app;
 }
 
 export function getFirestoreInstance() {
-  if (!db) {
-    initFirebase();
-  }
+  if (!db) initFirebase();
   return db;
+}
+
+export function getAuthInstance() {
+  if (!auth) initFirebase();
+  return auth;
 }
 
 export { app };
