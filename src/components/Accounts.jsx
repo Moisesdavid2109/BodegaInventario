@@ -1,229 +1,221 @@
-import React, { useEffect, useState } from 'react'
-import * as db from '../lib/db'
+import React, { useEffect, useState } from 'react';
+import * as db from '../lib/db';
 
-function fmt(n){
-  const nf = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
-  if (!n && n !== 0) return nf.format(0)
-  return nf.format(Number(n))
+// Formatea un número como moneda colombiana
+function formatearMoneda(n) {
+  const formato = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+  if (!n && n !== 0) return formato.format(0);
+  return formato.format(Number(n));
 }
 
-export default function Accounts({ people = [], products = [], onChange, saldo, setSaldo, resumenDiario, setResumenDiario, uid }) {
-  const [personName, setPersonName] = useState('')
-  const [inlineMode, setInlineMode] = useState(null) // 'add' | 'sub' | null
-  const [inlineValue, setInlineValue] = useState('')
-  const [firebaseAvailable, setFirebaseAvailable] = useState(false)
-  const [loadError, setLoadError] = useState(null)
+// historialDiferencias = [{fecha: 'YYYY-MM-DD', diferencia: number}]
+export default function Accounts({ people = [], products = [], onChange, saldo, setSaldo, resumenDiario, setResumenDiario, uid, historialDiferencias = [] }) {
+  const [nombrePersona, setNombrePersona] = useState('');
+  const [modoInline, setModoInline] = useState(null); // 'add' | 'sub' | null
+  const [valorInline, setValorInline] = useState('');
+  const [firebaseDisponible, setFirebaseDisponible] = useState(false);
+  const [errorCarga, setErrorCarga] = useState(null);
 
-  const totalAll = () => saldo
+  // Devuelve el saldo total actual
+  const obtenerTotal = () => saldo;
 
-  // Cuando cambie el saldo en la base local, actualiza el global
-  // El saldo ya viene por props, no se consulta local
-  const refreshCash = async () => {
-    // No hace nada, el saldo viene de Firestore
-  }
+  // No hace nada, el saldo viene de Firestore
+  const refrescarSaldo = async () => {};
 
-  const openInline = (mode) => {
-    setInlineMode(mode)
-    setInlineValue('')
-  }
+  // Abre el input para añadir o restar dinero
+  const abrirInline = (modo) => {
+    setModoInline(modo);
+    setValorInline('');
+  };
 
-  // Añadir/restar dinero al saldo y actualizar resumen diario
-  const confirmInline = async () => {
-    if (!inlineValue) return
-    const value = parseFloat(inlineValue.replace(',', '.'))
-    if (Number.isNaN(value)) return alert('Monto inválido')
+  // Añade o resta dinero al saldo y actualiza el resumen diario
+  const confirmarInline = async () => {
+    if (!valorInline) return;
+    const valor = parseFloat(valorInline.replace(',', '.'));
+    if (Number.isNaN(valor)) return alert('Monto inválido');
     let nuevoSaldo = saldo;
     let nuevoResumen = { ...resumenDiario };
-    if (inlineMode === 'add') {
-      nuevoSaldo = saldo + value;
-      nuevoResumen.ingresos = (resumenDiario?.ingresos || 0) + value;
-    } else if (inlineMode === 'sub') {
-      nuevoSaldo = saldo - value;
-      nuevoResumen.gastos = (resumenDiario?.gastos || 0) + value;
+    if (modoInline === 'add') {
+      nuevoSaldo = saldo + valor;
+      nuevoResumen.ingresos = (resumenDiario?.ingresos || 0) + valor;
+    } else if (modoInline === 'sub') {
+      nuevoSaldo = saldo - valor;
+      nuevoResumen.gastos = (resumenDiario?.gastos || 0) + valor;
     }
-    // Recalcular diferencia: ingresos totales menos gastos totales
+    // Calcula la diferencia entre ingresos y gastos
     const ingresos = nuevoResumen.ingresos || 0;
     const gastos = nuevoResumen.gastos || 0;
     nuevoResumen.diferencia = ingresos - gastos;
-    setSaldo(nuevoSaldo)
-    setResumenDiario(nuevoResumen)
-    // Guardar el nuevo saldo y resumen en Firestore
+    setSaldo(nuevoSaldo);
+    setResumenDiario(nuevoResumen);
+    // Guarda el nuevo estado en Firestore
     const estado = {
       saldo: nuevoSaldo,
       resumenDiario: nuevoResumen,
       clientes: people,
       uid
-    }
-    const { guardarEstadoGestor } = await import('../gestorFirestore')
-    await guardarEstadoGestor(estado)
-    setInlineMode(null)
-    setInlineValue('')
-    onChange && await onChange()
-  }
+    };
+    const { guardarEstadoGestor } = await import('../gestorFirestore');
+    await guardarEstadoGestor(estado);
+    setModoInline(null);
+    setValorInline('');
+    onChange && await onChange();
+  };
 
-  const cancelInline = () => {
-    setInlineMode(null)
-    setInlineValue('')
-  }
+  // Cancela el input inline
+  const cancelarInline = () => {
+    setModoInline(null);
+    setValorInline('');
+  };
 
-  const removeAllPeople = async () => {
-    if (!confirm('¿Borrar todas las personas? Esta acción no se puede deshacer.')) return
-    await db.clearPeople()
-    onChange && await onChange()
-  }
+  // Elimina todas las personas
+  const eliminarTodasPersonas = async () => {
+    if (!confirm('¿Borrar todas las personas? Esta acción no se puede deshacer.')) return;
+    await db.clearPeople();
+    onChange && await onChange();
+  };
 
-  const addPerson = async () => {
-    if (!personName) return
+  // Añade una persona
+  const agregarPersona = async () => {
+    if (!nombrePersona) return;
     try {
-      await db.addPerson({ name: personName }, uid)
-      setPersonName('')
-      onChange && await onChange()
+      await db.addPerson({ name: nombrePersona }, uid);
+      setNombrePersona('');
+      onChange && await onChange();
     } catch (e) {
-      alert('Error al agregar persona: ' + (e.message || e))
+      alert('Error al agregar persona: ' + (e.message || e));
     }
-  }
+  };
 
-  const addQuick = async (personId) => {
-    const raw = prompt('Ingrese monto a agregar (número):', '0')
-    if (!raw) return
-    const value = parseFloat(raw.replace(',', '.'))
-    if (Number.isNaN(value)) return alert('Monto inválido')
+  // Añade deuda rápida
+  const agregarRapido = async (idPersona) => {
+    const raw = prompt('Ingrese monto a agregar (número):', '0');
+    if (!raw) return;
+    const valor = parseFloat(raw.replace(',', '.'));
+    if (Number.isNaN(valor)) return alert('Monto inválido');
     try {
-      await db.addDebt(personId, { productId: null, amount: value, date: new Date().toISOString() }, uid)
-      // Refrescar todo el estado global
-      onChange && await onChange()
+      await db.addDebt(idPersona, { productId: null, amount: valor, date: new Date().toISOString() }, uid);
+      onChange && await onChange();
     } catch (e) {
-      alert('Error al agregar deuda: ' + (e.message || e))
+      alert('Error al agregar deuda: ' + (e.message || e));
     }
-  }
+  };
 
-  const subQuick = async (personId) => {
-    const raw = prompt('Ingrese monto a descontar (número):', '0')
-    if (!raw) return
-    const value = parseFloat(raw.replace(',', '.'))
-    if (Number.isNaN(value)) return alert('Monto inválido')
+  // Resta deuda rápida
+  const restarRapido = async (idPersona) => {
+    const raw = prompt('Ingrese monto a descontar (número):', '0');
+    if (!raw) return;
+    const valor = parseFloat(raw.replace(',', '.'));
+    if (Number.isNaN(valor)) return alert('Monto inválido');
     try {
-      await db.addDebt(personId, { productId: null, amount: -Math.abs(value), date: new Date().toISOString() }, uid)
-      // Refrescar todo el estado global
-      onChange && await onChange()
+      await db.addDebt(idPersona, { productId: null, amount: -Math.abs(valor), date: new Date().toISOString() }, uid);
+      onChange && await onChange();
     } catch (e) {
-      alert('Error al descontar deuda: ' + (e.message || e))
+      alert('Error al descontar deuda: ' + (e.message || e));
     }
-  }
+  };
 
-  const totalFor = (p) => {
-    return (p.debts||[]).reduce((s,d)=> s + (Number(d.amount)||0), 0)
-  }
+  // Calcula el total de deuda de una persona
+  const totalPorPersona = (p) => {
+    return (p.debts || []).reduce((s, d) => s + (Number(d.amount) || 0), 0);
+  };
 
-  // Inline per-person input
-  const [personInline, setPersonInline] = useState({ personId: null, mode: null })
-  const [personInlineValue, setPersonInlineValue] = useState('')
+  // Inline para cada persona
+  const [inlinePersona, setInlinePersona] = useState({ personId: null, mode: null });
+  const [valorInlinePersona, setValorInlinePersona] = useState('');
 
-  const openPersonInline = (personId, mode) => {
-    setPersonInline({ personId, mode })
-    setPersonInlineValue('')
-  }
+  // Abre el input inline para una persona
+  const abrirInlinePersona = (idPersona, modo) => {
+    setInlinePersona({ personId: idPersona, mode: modo });
+    setValorInlinePersona('');
+  };
 
-  const confirmPersonInline = async (personId) => {
-    if (!personInlineValue) return
-    const value = parseFloat(personInlineValue.replace(',', '.'))
-    if (Number.isNaN(value)) return alert('Monto inválido')
-    const amt = personInline.mode === 'add' ? Math.abs(value) : -Math.abs(value)
+  // Confirma el input inline para una persona
+  const confirmarInlinePersona = async (idPersona) => {
+    if (!valorInlinePersona) return;
+    const valor = parseFloat(valorInlinePersona.replace(',', '.'));
+    if (Number.isNaN(valor)) return alert('Monto inválido');
+    const monto = inlinePersona.mode === 'add' ? Math.abs(valor) : -Math.abs(valor);
     try {
-      await db.addDebt(personId, { productId: null, amount: amt, date: new Date().toISOString() }, uid)
-      setPersonInline({ personId: null, mode: null })
-      setPersonInlineValue('')
-      // Refrescar todo el estado global
-      onChange && await onChange()
+      await db.addDebt(idPersona, { productId: null, amount: monto, date: new Date().toISOString() }, uid);
+      setInlinePersona({ personId: null, mode: null });
+      setValorInlinePersona('');
+      onChange && await onChange();
     } catch (e) {
-      alert('Error al modificar deuda: ' + (e.message || e))
+      alert('Error al modificar deuda: ' + (e.message || e));
     }
-  }
+  };
 
-  // cash tx / summary
-  const [cashTx, setCashTx] = useState([])
-  // El resumen diario global viene de App.jsx
+  // Estado de transacciones de caja (no usado)
+  const [transaccionesCaja, setTransaccionesCaja] = useState([]);
+  const [resumenHoy, setResumenHoy] = useState({ ingresos: 0, gastos: 0, diferencia: 0 });
+  const refrescarTransacciones = async () => {
+    setTransaccionesCaja([]);
+    setResumenHoy({ ingresos: 0, gastos: 0, diferencia: 0 });
+  };
 
-  const [todaySummary, _setTodaySummary] = useState({ incomes:0, expenses:0, net:0 })
-  // refreshTx deshabilitado, ya que no hay movimientos de caja independientes
-  const refreshTx = async () => {
-    setCashTx([])
-    // No borrar el resumen diario aquí
-    _setTodaySummary({ incomes:0, expenses:0, net:0 })
-  }
-
+  // Inicializa el componente
   useEffect(() => {
-    let mounted = true
-    ;(async () => {
+    let montado = true;
+    (async () => {
       try {
-        // Modo local: no hay conexión en la nube por defecto
-        setFirebaseAvailable(false)
-        await refreshCash()
-        await refreshTx()
+        setFirebaseDisponible(false);
+        await refrescarSaldo();
+        await refrescarTransacciones();
       } catch (err) {
-        console.warn('[Accounts] inicializando datos:', err)
-        setLoadError(err && err.message ? err.message : String(err))
-        if (mounted) {
-          setCashTx([])
-          setTodaySummary({ incomes:0, expenses:0, net:0 })
+        setErrorCarga(err && err.message ? err.message : String(err));
+        if (montado) {
+          setTransaccionesCaja([]);
+          setResumenHoy({ ingresos: 0, gastos: 0, diferencia: 0 });
         }
       }
-    })()
-    return () => { mounted = false }
-  }, [])
+    })();
+    return () => { montado = false; };
+  }, []);
 
-  const cancelPersonInline = () => {
-    setPersonInline({ personId: null, mode: null })
-    setPersonInlineValue('')
-  }
+  // Cancela el input inline de persona
+  const cancelarInlinePersona = () => {
+    setInlinePersona({ personId: null, mode: null });
+    setValorInlinePersona('');
+  };
 
-  // Guardado / sincronización
-  // Sincronización/export/import: removido (botones eliminados)
 
   return (
     <section>
       <div className="balance-panel panel">
-        <div className="balance-amount">{fmt(totalAll())}</div>
+        <div className="balance-amount">{formatearMoneda(obtenerTotal())}</div>
         <div className="big-actions">
-          <button className="btn-add" onClick={()=>openInline('add')}>+ Añadir</button>
-          <button className="btn-sub" onClick={()=>openInline('sub')}>− Restar</button>
+          <button className="btn-add" onClick={() => abrirInline('add')}>+ Añadir</button>
+          <button className="btn-sub" onClick={() => abrirInline('sub')}>- Restar</button>
         </div>
-
-
-        {inlineMode && (
+        {modoInline && (
           <div className="inline-input">
-            <input inputMode="numeric" placeholder="0" value={inlineValue} onChange={e=>setInlineValue(e.target.value)} />
+            <input inputMode="numeric" placeholder="0" value={valorInline} onChange={e => setValorInline(e.target.value)} />
             <div className="inline-actions">
-              <button className="confirm" onClick={confirmInline}>OK</button>
-              <button className="cancel" onClick={cancelInline}>Cancelar</button>
+              <button className="confirm" onClick={confirmarInline}>OK</button>
+              <button className="cancel" onClick={cancelarInline}>Cancelar</button>
             </div>
           </div>
         )}
       </div>
 
-      
-
-      {/* Show simple status when Firestore not available (non-alarm) */}
-      {!firebaseAvailable && !loadError && (
-        <div style={{padding:'8px 12px', fontSize:13, color: '#666'}}>Modo local (sin sincronización en la nube)</div>
+      {/* Estado de Firestore */}
+      {!firebaseDisponible && !errorCarga && (
+        <div style={{ padding: '8px 12px', fontSize: 13, color: '#666' }}>Modo local (sin sincronización en la nube)</div>
       )}
 
-      {/* If there is a loadError, show it but prefer friendly message when it's just 'No Firestore disponible' */}
-      {loadError && (
-        <div style={{padding:'8px 12px', fontSize:13, color: 'crimson'}}>
-          {loadError.includes('No Firestore disponible') || loadError.includes('Permission') ? 'Modo local: no se pudo conectar al servicio en la nube.' : ('Error al cargar datos: ' + loadError)}
+      {/* Error de carga */}
+      {errorCarga && (
+        <div style={{ padding: '8px 12px', fontSize: 13, color: 'crimson' }}>
+          {errorCarga.includes('No Firestore disponible') || errorCarga.includes('Permission') ? 'Modo local: no se pudo conectar al servicio en la nube.' : ('Error al cargar datos: ' + errorCarga)}
         </div>
-      )}
-
-      {loadError && (
-        <div style={{padding:'8px 12px', fontSize:13, color: 'crimson'}}>Error al cargar datos: {loadError}</div>
       )}
 
       <div className="daily-summary panel">
         <h3>Resumen Diario</h3>
         <div className="summary-rows">
-          <div className="summary-row"><span>Ingresos Hoy</span><span className="income">{fmt(resumenDiario?.ingresos ?? 0)}</span></div>
-          <div className="summary-row"><span>Gastos Hoy</span><span className="expense">{fmt(resumenDiario?.gastos ?? 0)}</span></div>
+          <div className="summary-row"><span>Ingresos Hoy</span><span className="income">{formatearMoneda(resumenDiario?.ingresos ?? 0)}</span></div>
+          <div className="summary-row"><span>Gastos Hoy</span><span className="expense">{formatearMoneda(resumenDiario?.gastos ?? 0)}</span></div>
         </div>
         <div className="chart" aria-hidden>
           <svg viewBox="0 0 120 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -237,20 +229,32 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
                 <stop offset="100%" stopColor="#2563eb" />
               </linearGradient>
             </defs>
-            {/* Gráfica de montaña: la línea y el punto reflejan la diferencia */}
+            {/* Gráfica de evolución diaria */}
             {(() => {
-              // Rango visual: diferencia entre -maxDiff y +maxDiff
               const maxDiff = 48;
-              const diff = Math.max(-maxDiff, Math.min(maxDiff, resumenDiario?.diferencia ?? 0));
-              // y=28 es el centro, sube o baja según la diferencia
-              const y = 28 - (diff / maxDiff) * 20;
+              let historial = historialDiferencias && historialDiferencias.length ? historialDiferencias.slice(-6) : [];
+              const hoy = new Date().toISOString().slice(0, 10);
+              if (!historial.find(d => d.fecha === hoy)) {
+                historial = [...historial, { fecha: hoy, diferencia: resumenDiario?.diferencia ?? 0 }];
+              }
+              while (historial.length < 6) historial.unshift({ fecha: '', diferencia: 0 });
+              const puntos = historial.map((d, i) => {
+                let diff = typeof d.diferencia === 'number' && !isNaN(d.diferencia) ? d.diferencia : 0;
+                diff = Math.max(-maxDiff, Math.min(maxDiff, diff));
+                const x = 8 + i * 24;
+                const y = 28 - (diff / maxDiff) * 20;
+                return `${x},${y}`;
+              }).join(' ');
+              const idxActual = 5;
+              const puntoActual = puntos.split(' ')[idxActual];
+              const [cx, cy] = puntoActual ? puntoActual.split(',').map(Number) : [120, 28];
               return <>
-                <polyline points={`8,${y} 32,${y} 56,${y} 80,${y} 104,${y}`} fill="none" stroke="url(#mountainStroke)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx={60} cy={y} r="3.6" fill="#08469a" stroke="#fff" strokeWidth="1" />
+                <polyline points={puntos} fill="none" stroke="url(#mountainStroke)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx={cx} cy={cy} r="3.6" fill="#08469a" stroke="#fff" strokeWidth="1" />
               </>;
             })()}
           </svg>
-          <div className="chart-net">{resumenDiario?.diferencia >= 0 ? '+' : ''}{fmt(resumenDiario?.diferencia ?? 0)} Hoy</div>
+          <div className="chart-net">{resumenDiario?.diferencia >= 0 ? '+' : ''}{formatearMoneda(resumenDiario?.diferencia ?? 0)} Hoy</div>
         </div>
       </div>
 
@@ -260,15 +264,15 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
         <div className="person-input">
           <span className="icon-user" aria-hidden>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" fill="#A0B0B8"/>
-              <path d="M4 20c0-3.314 4.03-6 8-6s8 2.686 8 6v1H4v-1z" fill="#A0B0B8"/>
+              <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" fill="#A0B0B8" />
+              <path d="M4 20c0-3.314 4.03-6 8-6s8 2.686 8 6v1H4v-1z" fill="#A0B0B8" />
             </svg>
           </span>
-          <input className="input-person" placeholder="Nombre de la persona" value={personName} onChange={e=>setPersonName(e.target.value)} />
+          <input className="input-person" placeholder="Nombre de la persona" value={nombrePersona} onChange={e => setNombrePersona(e.target.value)} />
         </div>
         <div className="form-actions">
-          <button type="button" className="btn-person-add" onClick={addPerson}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="#fff"/></svg>
+          <button type="button" className="btn-person-add" onClick={agregarPersona}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="#fff" /></svg>
             <span>Añadir persona</span>
           </button>
         </div>
@@ -284,19 +288,19 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
               <h3>{p.name}</h3>
             </div>
             <div className="actions">
-              <div className="amount">{fmt(totalFor(p))}</div>
+              <div className="amount">{formatearMoneda(totalPorPersona(p))}</div>
               <div className="quick">
-                {! (personInline.personId === p.id) ? (
+                {!(inlinePersona.personId === p.id) ? (
                   <>
-                    <button className="add" title="Agregar deuda" onClick={()=>openPersonInline(p.id,'add')}>+</button>
-                    <button className="sub" title="Registrar pago" onClick={()=>openPersonInline(p.id,'sub')}>-</button>
+                    <button className="add" title="Agregar deuda" onClick={() => abrirInlinePersona(p.id, 'add')}>+</button>
+                    <button className="sub" title="Registrar pago" onClick={() => abrirInlinePersona(p.id, 'sub')}>-</button>
                   </>
                 ) : (
                   <div className="person-inline">
-                    <input inputMode="numeric" placeholder="0" value={personInlineValue} onChange={e=>setPersonInlineValue(e.target.value)} />
+                    <input inputMode="numeric" placeholder="0" value={valorInlinePersona} onChange={e => setValorInlinePersona(e.target.value)} />
                     <div className="person-inline-actions">
-                      <button className="confirm" onClick={()=>confirmPersonInline(p.id)}>OK</button>
-                      <button className="cancel" onClick={cancelPersonInline}>X</button>
+                      <button className="confirm" onClick={() => confirmarInlinePersona(p.id)}>OK</button>
+                      <button className="cancel" onClick={cancelarInlinePersona}>X</button>
                     </div>
                   </div>
                 )}
@@ -305,7 +309,6 @@ export default function Accounts({ people = [], products = [], onChange, saldo, 
           </div>
         ))}
       </div>
-      
     </section>
-  )
+  );
 }

@@ -1,11 +1,8 @@
-
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
+export default {
+  // ...otros ajustes de Vite
   plugins: [
-    react(),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -18,12 +15,12 @@ export default defineConfig({
         description: 'Gestor de productos y cuentas para tu bodega.',
         icons: [
           {
-            src: 'src/assets/favicon.png',
+            src: 'src/assets/icon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'src/assets/favicon.png',
+            src: 'src/assets/icon-512.png',
             sizes: '512x512',
             type: 'image/png'
           }
@@ -31,5 +28,5 @@ export default defineConfig({
         orientation: 'portrait'
       }
     })
-  ],
-});
+  ]
+};

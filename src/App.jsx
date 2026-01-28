@@ -83,12 +83,19 @@ export default function App() {
 
 
 
+
   const refresh = async () => {
     if (!user) return;
     // Traer el estado completo del gestor desde Firestore
     const estado = await db.obtenerEstadoGestor(user.uid)
     setSaldo(estado.saldo ?? 0)
-    setResumenDiario(estado.resumenDiario ?? { ingresos: 0, gastos: 0, diferencia: 0 })
+    // Respetar la fecha del resumen diario
+    const hoy = getTodayString();
+    let resumen = estado.resumenDiario ?? { ingresos: 0, gastos: 0, diferencia: 0, fecha: hoy };
+    if (!resumen.fecha || resumen.fecha !== hoy) {
+      resumen = { ingresos: 0, gastos: 0, diferencia: 0, fecha: hoy };
+    }
+    setResumenDiario(resumen);
     setPeople(estado.clientes ?? [])
     setProducts(estado.products ?? [])
   }

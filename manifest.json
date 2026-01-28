@@ -1,0 +1,22 @@
+{
+  "name": "Bodega Lista",
+  "short_name": "Bodega",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "description": "Gestor de productos y cuentas para tu bodega.",
+  "icons": [
+    {
+      "src": "src/assets/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "src/assets/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait"
+}

@@ -4,10 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bodega Lista</title>
-    <script type="module" crossorigin src="/assets/index-DHhelKl6.js"></script>
+    <link rel="icon" type="image/png" href="/assets/favicon-C-1I69li.png" />
+    <link rel="manifest" href="/assets/manifest-BuI_s66T.json" />
+    <script type="module" crossorigin src="/assets/index-kh3jRn5V.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-ClxRqm0x.css">
-  </head>
+  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
+      <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js');
+          });
+        }
+      </script>
   </body>
 </html>
