@@ -1,10 +1,6 @@
-export { obtenerEstadoGestor } from '../gestorFirestore';
-// Capa de datos local-only: localStorage + products.json como fallback
+// Capa de datos local-only: localStorage como almacenamiento
 
-
-
-
-import { obtenerEstadoGestor, guardarEstadoGestor } from '../gestorFirestore'
+import { obtenerEstadoGestor, guardarEstadoGestor } from '../gestorLocal'
 
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8) }
 
@@ -14,52 +10,44 @@ export function subscribe(fn) { _listeners.add(fn); return () => _listeners.dele
 export function unsubscribe(fn) { _listeners.delete(fn) }
 function notifyChange(detail) { try { for (const l of Array.from(_listeners)) { try { l(detail) } catch(e){ console.warn('[db] listener error', e) } } } catch(e){} }
 
-// Todas las funciones requieren el UID del usuario
-export async function getProducts(uid) {
-  const estado = await obtenerEstadoGestor(uid)
+export async function getProducts() {
+  const estado = await obtenerEstadoGestor()
   if (!estado.products || !Array.isArray(estado.products)) estado.products = [];
   return estado.products;
 }
 
-export async function addProduct(prod, uid) {
-  const estado = await obtenerEstadoGestor(uid) || {}
+export async function addProduct(prod) {
+  const estado = await obtenerEstadoGestor() || {}
   if (!estado.products || !Array.isArray(estado.products)) estado.products = [];
-  const item = { id: generateId(), name: prod.name, price: prod.price || 0, category: prod.category || 'General', sku: prod.sku || null }
+  const item = { id: generateId(), name: prod.name, price: prod.price || 0, costPrice: prod.costPrice || 0, category: prod.category || 'General', image: prod.image || null, stock: Number.isFinite(Number(prod.stock)) ? Math.max(0, Number(prod.stock)) : 0 }
   estado.products.push(item)
-  await guardarEstadoGestor({ ...estado, products: estado.products, uid })
+  await guardarEstadoGestor({ ...estado, products: estado.products })
   notifyChange({ type: 'products', action: 'add', item })
   return item
 }
 
-export async function getPeople(uid) {
-  const estado = await obtenerEstadoGestor(uid)
-  if (!estado.clientes || !Array.isArray(estado.clientes)) estado.clientes = [];
-  return estado.clientes;
+export async function updateProduct(prod) {
+  const estado = await obtenerEstadoGestor() || {}
+  if (!estado.products || !Array.isArray(estado.products)) estado.products = [];
+  let idx = estado.products.findIndex(x => x.id === prod.id)
+  // Si el id no coincide (datos viejos o duplicados), busca por nombre
+  if (idx === -1 && prod.name) {
+    idx = estado.products.findIndex(x => (x.name || x.nombre) === prod.name)
+  }
+  if (idx === -1) return null
+  estado.products[idx] = { ...estado.products[idx], ...prod }
+  await guardarEstadoGestor({ ...estado, products: estado.products })
+  notifyChange({ type: 'products', action: 'update', item: estado.products[idx] })
+  return estado.products[idx]
 }
 
-export async function addPerson(person, uid) {
-  const estado = await obtenerEstadoGestor(uid) || {}
-  if (!estado.clientes || !Array.isArray(estado.clientes)) estado.clientes = [];
-  const item = { id: generateId(), name: person.name, debts: [] }
-  estado.clientes.push(item)
-  await guardarEstadoGestor({ ...estado, clientes: estado.clientes, uid })
-  notifyChange({ type: 'people', action: 'add', item })
-  return item
+export async function deleteProduct(productId) {
+  const estado = await obtenerEstadoGestor() || {}
+  if (!estado.products || !Array.isArray(estado.products)) estado.products = [];
+  const antes = estado.products.length
+  estado.products = estado.products.filter(x => x.id !== productId)
+  if (estado.products.length === antes) return false
+  await guardarEstadoGestor({ ...estado, products: estado.products })
+  notifyChange({ type: 'products', action: 'delete', productId })
+  return true
 }
-
-export async function addDebt(personId, debt, uid) {
-  const estado = await obtenerEstadoGestor(uid) || {}
-  if (!estado.clientes || !Array.isArray(estado.clientes)) estado.clientes = [];
-  const p = estado.clientes.find(x => x.id === personId)
-  if (!p) return null
-  p.debts = p.debts || []
-  p.debts.push(debt)
-  await guardarEstadoGestor({ ...estado, clientes: estado.clientes, uid })
-  notifyChange({ type: 'debt', action: 'add', personId, debt })
-  return debt
-}
-
-export async function clearAll() { localStorage.removeItem(LS_KEY) }
-
-
-// Las funciones de cash y notificaciones deben migrarse a Firestore si se requieren. Por ahora, eliminadas para evitar errores.
