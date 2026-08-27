@@ -39,7 +39,7 @@ export default function SelectorPerfil({ onSelect }) {
 
   if (mostrarCrear) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-sky-100 to-slate-100 flex items-center justify-center p-4">
         <CrearPerfil onCrear={handleCrear} onCancelar={() => setMostrarCrear(false)} />
       </div>
     );
@@ -47,9 +47,9 @@ export default function SelectorPerfil({ onSelect }) {
 
   if (perfilSeleccionado) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-sky-100 to-slate-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-sm text-center">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-sky-100 text-blue-600 flex items-center justify-center mx-auto mb-4">
             <User className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 mb-1">{perfilSeleccionado.nombre}</h2>
@@ -70,19 +70,19 @@ export default function SelectorPerfil({ onSelect }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 to-slate-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white flex items-center justify-center mx-auto mb-4">
             <Store className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">BodegaInventario</h1>
+          <h1 className="text-2xl font-bold text-slate-900">StrataStock</h1>
           <p className="text-sm text-gray-400 mt-1">Selecciona un perfil para continuar</p>
         </div>
 
         {cargando ? (
           <div className="text-center py-8">
-            <div className="w-6 h-6 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-6 h-6 border-3 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-gray-400 text-sm">Cargando perfiles...</p>
           </div>
         ) : (
@@ -97,7 +97,7 @@ export default function SelectorPerfil({ onSelect }) {
             <div className="flex flex-col gap-3 mb-4">
               {perfiles.map(p => (
                 <button key={p.id} onClick={() => { setPerfilSeleccionado(p); setError(''); }}
-                  className="flex items-center gap-3 w-full p-4 rounded-2xl border-2 border-gray-100 hover:border-emerald-200 hover:bg-emerald-50 transition text-left active:scale-95">
+                  className="flex items-center gap-3 w-full p-4 rounded-2xl border-2 border-gray-100 hover:border-sky-300 hover:bg-sky-50 transition text-left active:scale-95">
                   <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
                     <User className="w-6 h-6" />
                   </div>
@@ -112,7 +112,7 @@ export default function SelectorPerfil({ onSelect }) {
             </div>
 
             <button onClick={() => setMostrarCrear(true)}
-              className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border-2 border-dashed border-gray-200 text-gray-500 hover:border-emerald-300 hover:text-emerald-600 transition font-medium text-sm">
+              className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border-2 border-dashed border-gray-200 text-gray-500 hover:border-sky-300 hover:text-blue-600 transition font-medium text-sm">
               <UserPlus className="w-4 h-4" />
               Crear nuevo perfil
             </button>

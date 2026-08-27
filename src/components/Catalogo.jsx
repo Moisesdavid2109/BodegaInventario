@@ -49,12 +49,12 @@ export default function Catalogo({ products = [], onAddToCart, onNuevoProducto, 
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
             placeholder="Buscar productos..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl neu-inset focus:outline-none focus:ring-2 focus:ring-sky-500/40"
           />
         </div>
         <button
           onClick={onNuevoProducto}
-          className="flex items-center gap-1.5 bg-emerald-600 text-white rounded-lg px-3.5 py-2.5 font-semibold hover:bg-emerald-700 active:scale-95 transition whitespace-nowrap text-sm"
+          className="flex items-center gap-1.5 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-lg px-3.5 py-2.5 font-semibold hover:brightness-105 active:scale-95 transition whitespace-nowrap text-sm"
         >
           <Plus className="w-4 h-4" />
           Nuevo producto
@@ -68,7 +68,7 @@ export default function Catalogo({ products = [], onAddToCart, onNuevoProducto, 
             onClick={() => setCategoria(c)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               categoria === c
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-blue-600 text-white shadow-[0_4px_10px_rgba(37,99,235,0.4)]'
                 : 'bg-white border border-gray-200 text-gray-600 hover:bg-slate-50'
             }`}
           >
@@ -84,7 +84,7 @@ export default function Catalogo({ products = [], onAddToCart, onNuevoProducto, 
           {productosVisibles.map(p => (
             <div
               key={p.id}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 flex items-center gap-3"
+              className="neu-sm rounded-2xl p-3 flex items-center gap-3"
             >
               <div className="w-16 h-16 rounded-xl bg-slate-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                 <img
@@ -137,7 +137,7 @@ export default function Catalogo({ products = [], onAddToCart, onNuevoProducto, 
                 </div>
                 <button
                   onClick={() => onAddToCart && onAddToCart(p)}
-                  className="p-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition"
+                  className="p-2 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white hover:brightness-110 active:scale-95 transition"
                   aria-label="Añadir al carrito"
                 >
                   <ShoppingCart className="w-4 h-4" />

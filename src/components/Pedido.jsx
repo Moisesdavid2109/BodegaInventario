@@ -112,7 +112,7 @@ export default function Pedido({
     }
   };
 
-  const inputEstilos = "border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500";
+  const inputEstilos = "border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500";
 
   return (
     <section className="max-w-3xl mx-auto px-4 py-5 pb-28">
@@ -132,13 +132,13 @@ export default function Pedido({
       </p>
 
       {esVenta && (
-        <div className="bg-emerald-50 rounded-xl px-4 py-3 mb-4">
-          <label className="text-xs font-bold text-amber-800 mb-2 block uppercase tracking-wide">Tipo de venta</label>
+        <div className="bg-sky-50 rounded-xl px-4 py-3 mb-4">
+          <label className="text-xs font-bold text-sky-800 mb-2 block uppercase tracking-wide">Tipo de venta</label>
           <div className="flex gap-2">
             <button
               onClick={() => setFiadoPersonaId('')}
               className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition border-2 ${
-                fiadoPersonaId === '' ? 'border-emerald-500 bg-white text-emerald-700 shadow-sm' : 'border-emerald-200 text-emerald-600 hover:border-emerald-300'
+                fiadoPersonaId === '' ? 'border-sky-500 bg-white text-sky-700 shadow-sm' : 'border-sky-200 text-sky-600 hover:border-sky-300'
               }`}
             >
               Contado
@@ -171,7 +171,7 @@ export default function Pedido({
               )}
             </>
           )}
-          <p className="text-[11px] text-emerald-600 mt-2">
+          <p className="text-[11px] text-sky-600 mt-2">
             {fiadoPersonaId === ''
               ? 'El monto se suma a tu caja de hoy.'
               : 'Se registra como deuda del cliente en Fiados.'}
@@ -204,7 +204,7 @@ export default function Pedido({
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
             placeholder="Buscar producto..."
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+            className="w-full pl-9 pr-3 py-2 rounded-xl neu-inset focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500"
           />
         </div>
 
@@ -234,7 +234,7 @@ export default function Pedido({
                   </div>
                   <button
                     onClick={() => añadir(p)}
-                    className="flex items-center gap-1 bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-sm font-semibold hover:bg-emerald-700 active:scale-95 transition shrink-0"
+                    className="flex items-center gap-1 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-lg px-3 py-1.5 text-sm font-semibold hover:brightness-110 active:scale-95 transition shrink-0"
                   >
                     <Plus className="w-4 h-4" />
                     Añadir
@@ -268,7 +268,7 @@ export default function Pedido({
                       value={i.precio}
                       onChange={e => cambiarPrecio(i.key, e.target.value)}
                       onFocus={e => e.target.select()}
-                      className="w-28 mt-1 text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                      className="w-28 mt-1 text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                       title="Precio unitario de compra"
                     />
                   )}
@@ -290,12 +290,12 @@ export default function Pedido({
                     value={i.qty}
                     onChange={e => cambiarCantidad(i.key, e.target.value)}
                     onFocus={e => e.target.select()}
-                    className="w-12 text-center border border-gray-200 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-12 text-center border border-gray-200 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                     aria-label="Cantidad"
                   />
                   <button
                     onClick={() => cambiarCantidad(i.key, i.qty + 1)}
-                    className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700 active:scale-95 transition"
+                    className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition"
                     aria-label="Aumentar cantidad"
                   >
                     <Plus className="w-4 h-4" />
@@ -321,7 +321,7 @@ export default function Pedido({
             </div>
             <button
               onClick={confirmar}
-              className="flex items-center gap-2 bg-emerald-600 text-white rounded-lg px-5 py-2.5 font-semibold hover:bg-emerald-700 active:scale-95 transition"
+              className="flex items-center gap-2 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-lg px-5 py-2.5 font-semibold hover:brightness-105 active:scale-95 transition"
             >
               <CheckCircle2 className="w-4 h-4" />
               {esVenta ? 'Registrar venta' : 'Registrar compra'}

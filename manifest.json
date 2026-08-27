@@ -1,11 +1,11 @@
 {
-  "name": "Bodega Lista",
-  "short_name": "Bodega",
+  "name": "StrataStock",
+  "short_name": "StrataStock",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1976d2",
-  "description": "Gestor de productos y cuentas para tu bodega.",
+  "background_color": "#f3f6ff",
+  "theme_color": "#2563eb",
+  "description": "Gestor de productos, caja, digital y fiados para tu negocio.",
   "icons": [
     {
       "src": "src/assets/favicon.png",

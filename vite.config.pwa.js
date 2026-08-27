@@ -11,14 +11,14 @@ export default {
         enabled: false
       },
       manifest: {
-        name: 'Bodegalista',
-        short_name: 'Bodegalista',
+        name: 'StrataStock',
+        short_name: 'StrataStock',
         start_url: '.',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#f8fafc',
-        theme_color: '#059669',
-        description: 'Control de ventas, compras, caja y fiado para tu negocio.',
+        background_color: '#f3f6ff',
+        theme_color: '#2563eb',
+        description: 'Control de ventas, compras, caja, digital y fiado para tu negocio.',
         lang: 'es',
         categories: ['business', 'shopping', 'finance'],
         icons: [

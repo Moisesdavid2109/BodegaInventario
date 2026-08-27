@@ -1,1 +1,111 @@
 @import "tailwindcss";
+
+:root {
+  --strata-bg: #eef1f8;
+  --strata-surface: #f3f6fc;
+  --strata-card: #ffffff;
+  --strata-ink: #0f172a;
+  --strata-sky: #38bdf8;
+  --strata-blue: #2563eb;
+  --strata-violet: #8b5cf6;
+  --neu-dark: rgba(163, 177, 198, 0.45);
+  --neu-dark-sm: rgba(163, 177, 198, 0.3);
+  --neu-light: #ffffff;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--strata-bg);
+  background-image: linear-gradient(160deg, #e8edf7 0%, #f6f9ff 45%, #eaf2ff 100%);
+  background-attachment: fixed;
+  color: var(--strata-ink);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ── Neuformismo ─────────────────────────────────────────── */
+.neu {
+  background: var(--strata-card);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 8px 8px 22px var(--neu-dark), -8px -8px 22px var(--neu-light);
+}
+
+.neu-sm {
+  background: var(--strata-card);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 4px 4px 10px var(--neu-dark-sm), -4px -4px 10px var(--neu-light);
+}
+
+.neu-inset {
+  background: var(--strata-surface);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 4px 4px 10px var(--neu-dark-sm), inset -4px -4px 10px var(--neu-light);
+}
+
+.neu-btn {
+  background: var(--strata-surface);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 5px 5px 12px var(--neu-dark-sm), -5px -5px 12px var(--neu-light);
+  transition: all 0.2s ease;
+}
+
+.neu-btn:hover {
+  box-shadow: 3px 3px 8px var(--neu-dark-sm), -3px -3px 8px var(--neu-light);
+}
+
+.neu-btn:active {
+  box-shadow: inset 3px 3px 8px var(--neu-dark-sm), inset -3px -3px 8px var(--neu-light);
+}
+
+.neu-light {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 6px 6px 16px var(--neu-dark-sm), -6px -6px 16px var(--neu-light);
+}
+
+/* ── Tarjetas de tasas (degradados vibrantes) ────────────── */
+.rate-grad-orange {
+  background: linear-gradient(135deg, #fb923c 0%, #f59e0b 40%, #facc15 100%);
+}
+
+.rate-grad-navy {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+}
+
+.rate-grad-green {
+  background: linear-gradient(135deg, #059669 0%, #10b981 55%, #34d399 100%);
+}
+
+.rate-card {
+  border-radius: 1.25rem;
+  color: #fff;
+  box-shadow: 8px 8px 20px var(--neu-dark), -6px -6px 16px rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.55);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

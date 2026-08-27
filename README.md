@@ -1,12 +1,15 @@
-# Bodega Lista
+# StrataStock
 
-Proyecto React mínimo para un catálogo y gestor de cuentas (deudas).
+Gestor de negocio: ventas, compras, caja, digital (bancos), fiados e historial.
 
 Características:
-- Catálogo de productos (añadir, ver)
-- Gestor de cuentas: registrar personas y anotar deudas por producto o monto
-- Persistencia por defecto en `localStorage`
--- Persistencia por defecto en `localStorage` (sin integración en la nube por defecto)
+- Catálogo de productos (añadir, ver, editar)
+- Ventas y compras con control de stock
+- Caja del día (ingresos y gastos en físico)
+- Digital: transferencias y tarjetas en bolívares (Bs)
+- Fiados: registrar personas y anotar deudas con pagos
+- Historial de pedidos y copia de seguridad (exportar/importar)
+- Tasas de cambio en vivo (USD/VES, COP/USD, EUR/VES) con respaldo offline
 
 Instalación y ejecución:
 
@@ -15,11 +18,4 @@ npm install
 npm run dev
 ```
 
-El proyecto funciona en modo local utilizando `localStorage`. Si en el futuro quieres añadir sincronización en la nube, puedo preparar una integración nueva y segura.
-
-Siguientes pasos recomendados:
-- Implementar autenticación si quieres varios usuarios
-- Migrar los métodos de `src/lib/db.js` a llamadas reales a Firestore
-- Añadir validación y edición/eliminación de registros
-
-Si quieres, continuo y conecto `src/lib/db.js` a Firestore directamente y pruebo la integración.
+Los datos se sincronizan mediante Firebase (Firestore). La app funciona como PWA instalable.

@@ -79,11 +79,11 @@ export default function NuevoProducto({ onGuardar, onCancelar, editando = null }
     }
   };
 
-  const inputEstilos = "border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500";
+  const inputEstilos = "border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500";
 
   return (
     <section className="max-w-lg mx-auto px-4 py-6">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+      <div className="neu rounded-2xl p-5">
         <h2 className="text-lg font-bold text-slate-900 mb-4">
           {editando ? 'Editar producto' : 'Nuevo producto'}
         </h2>
@@ -111,7 +111,7 @@ export default function NuevoProducto({ onGuardar, onCancelar, editando = null }
               className={inputEstilos}
             />
             {previewPrecio && (
-              <span className="text-xs text-emerald-600 font-semibold">
+              <span className="text-xs text-sky-600 font-semibold">
                 = {previewPrecio}
               </span>
             )}
@@ -163,7 +163,7 @@ export default function NuevoProducto({ onGuardar, onCancelar, editando = null }
               type="file"
               accept="image/*"
               onChange={manejarImagen}
-              className="border border-gray-200 rounded-lg px-3 py-2 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:text-emerald-700 file:font-medium hover:file:bg-emerald-100 cursor-pointer"
+              className="border border-gray-200 rounded-lg px-3 py-2 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-sky-50 file:text-sky-700 file:font-medium hover:file:bg-sky-100 cursor-pointer"
             />
             {imagen && (
               <img src={imagen} alt="Vista previa" className="w-16 h-16 object-contain mt-2 rounded-lg border border-gray-100" />
@@ -180,14 +180,14 @@ export default function NuevoProducto({ onGuardar, onCancelar, editando = null }
             <button
               type="button"
               onClick={onCancelar}
-              className="flex items-center justify-center gap-2 flex-1 bg-emerald-500/80 text-white rounded-lg px-4 py-2.5 font-semibold hover:bg-emerald-500/90 transition"
+              className="flex items-center justify-center gap-2 flex-1 neu-btn text-slate-600 rounded-lg px-4 py-2.5 font-semibold transition"
             >
               <ArrowLeft className="w-4 h-4" />
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex items-center justify-center gap-2 flex-1 bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-semibold hover:bg-emerald-700 active:scale-95 transition"
+              className="flex items-center justify-center gap-2 flex-1 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-lg px-4 py-2.5 font-semibold hover:brightness-105 active:scale-95 transition"
             >
               <Save className="w-4 h-4" />
               {editando ? 'Guardar cambios' : 'Guardar producto'}

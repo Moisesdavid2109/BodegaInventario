@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import Header from './components/Header';
 
-import Sidebar from './components/Sidebar';
 import Fab from './components/Fab';
 import SelectorPerfil from './components/auth/SelectorPerfil';
 import Dashboard from './components/dashboard/Dashboard';
@@ -22,7 +21,7 @@ function consultaEscritorio() {
 
 function AppContent() {
   const {
-    perfilActivo, cargando, login, logout,
+    perfilActivo, cargando, login,
     products, agregarProducto, actualizarProducto, actualizarPrecio, eliminarProducto,
     clientes, agregarFiado, pedidos, agregarPedido,
     exportarRespaldo, importarRespaldo,
@@ -30,7 +29,6 @@ function AppContent() {
 
   const [view, setView] = useState('dashboard');
   const [esEscritorio, setEsEscritorio] = useState(consultaEscritorio);
-  const [sidebarOpen, setSidebarOpen] = useState(consultaEscritorio);
   const [pedidoItems, setPedidoItems] = useState([]);
   const [editando, setEditando] = useState(null);
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -39,7 +37,7 @@ function AppContent() {
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const mq = window.matchMedia('(min-width: 768px)');
-    const onCambio = (e) => { setEsEscritorio(e.matches); setSidebarOpen(e.matches); };
+    const onCambio = (e) => setEsEscritorio(e.matches);
     if (mq.addEventListener) mq.addEventListener('change', onCambio);
     else if (mq.addListener) mq.addListener(onCambio);
     return () => {
@@ -76,10 +74,7 @@ function AppContent() {
     if (v === 'nuevoProducto') setEditando(null);
     if (v === 'venta' || v === 'compra') setPedidoItems([]);
     setView(v);
-    if (!esEscritorio) setSidebarOpen(false);
   };
-
-  const alternarMenu = () => setSidebarOpen(o => !o);
 
   const abrirVentaCon = (product) => {
     setPedidoItems(prev => {
@@ -167,7 +162,7 @@ function AppContent() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-gray-400">Cargando datos...</p>
         </div>
       </div>
@@ -177,31 +172,19 @@ function AppContent() {
   const pedidoCount = pedidoItems.reduce((s, i) => s + i.qty, 0);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-[max(7rem,env(safe-area-inset-bottom))] flex">
-      <Sidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        onToggle={alternarMenu}
-        view={view}
-        onNavigate={navegar}
+    <div className="min-h-screen pb-[max(7rem,env(safe-area-inset-bottom))] flex flex-col">
+      <Header
+        onOpenCart={() => setView('venta')}
+        cartCount={pedidoCount}
         puedeInstalar={puedeInstalar}
         onInstalar={instalarApp}
         esEscritorio={esEscritorio}
-        perfilActivo={perfilActivo}
-        onLogout={logout}
+        view={view}
+        onNavigate={navegar}
       />
-      <div className="flex-1 min-w-0 flex flex-col">
-        <Header
-          onOpenMenu={alternarMenu}
-          onOpenCart={() => setView('venta')}
-          cartCount={pedidoCount}
-          puedeInstalar={puedeInstalar}
-          onInstalar={instalarApp}
-          esEscritorio={esEscritorio}
-        />
 
-        <main>
-          {view === 'dashboard' && <Dashboard onNavigate={navegar} />}
+      <main>
+        {view === 'dashboard' && <Dashboard onNavigate={navegar} />}
 
           {view === 'catalogo' && (
             <Catalogo
@@ -273,7 +256,6 @@ function AppContent() {
             <Respaldo onExportar={exportarRespaldo} onImportar={importarRespaldo} onVolver={() => setView('dashboard')} />
           )}
         </main>
-      </div>
 
       {view !== 'venta' && view !== 'compra' && (
         <Fab onClick={() => setView('venta')} count={pedidoCount} />

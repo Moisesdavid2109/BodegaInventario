@@ -58,9 +58,9 @@ export default function CrearPerfil({ onCrear, onCancelar }) {
           <input value={nombre} onChange={e => setNombre(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleNombre()}
             placeholder="Ej: Tienda Principal" autoFocus
-            className="border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition" />
+            className="border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500 transition" />
           <button onClick={handleNombre}
-            className="flex items-center justify-center gap-2 bg-emerald-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-emerald-700 transition">
+            className="flex items-center justify-center gap-2 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:brightness-105 transition">
             <CheckCircle2 className="w-4 h-4" /> Continuar
           </button>
         </div>
@@ -76,8 +76,8 @@ export default function CrearPerfil({ onCrear, onCancelar }) {
       )}
 
       {creando && (
-        <div className="flex items-center justify-center gap-2 text-sm text-emerald-600 mt-3">
-          <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center justify-center gap-2 text-sm text-sky-600 mt-3">
+          <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
           Creando perfil...
         </div>
       )}

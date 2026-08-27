@@ -41,7 +41,7 @@ export default function Historial({ pedidos = [], clientes = [], onVolver, onDes
 
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <History className="w-5 h-5 text-emerald-600" />
+          <History className="w-5 h-5 text-blue-600" />
           Historial de pedidos
         </h2>
         <div className="flex gap-1 p-1 bg-slate-100 rounded-xl text-sm">
@@ -54,7 +54,7 @@ export default function Historial({ pedidos = [], clientes = [], onVolver, onDes
               key={t.id}
               onClick={() => setFiltro(t.id)}
               className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                filtro === t.id ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-500'
+                filtro === t.id ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500'
               }`}
             >
               {t.label}
@@ -63,7 +63,7 @@ export default function Historial({ pedidos = [], clientes = [], onVolver, onDes
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+      <div className="neu rounded-2xl p-5">
         {visibles.length === 0 ? (
           <div className="text-center text-gray-400 py-10">Aún no hay pedidos guardados.</div>
         ) : (
@@ -75,13 +75,13 @@ export default function Historial({ pedidos = [], clientes = [], onVolver, onDes
                 <li key={p.id} className="border border-gray-100 rounded-xl p-3">
                   <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${esVenta ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${esVenta ? 'bg-sky-50 text-sky-700' : 'bg-violet-50 text-violet-700'}`}>
                         {esVenta ? <ShoppingCart className="w-3 h-3" /> : <PackagePlus className="w-3 h-3" />}
                         {esVenta ? 'Venta' : 'Compra'}
                       </span>
                       <span className="text-xs text-gray-400">{formatearFecha(p.fecha)}</span>
                     </div>
-                    <span className={`font-bold ${esVenta ? 'text-emerald-600' : 'text-blue-600'}`}>{formatearMoneda(p.total)}</span>
+                    <span className={`font-bold ${esVenta ? 'text-sky-600' : 'text-violet-600'}`}>{formatearMoneda(p.total)}</span>
                   </div>
                   <ul className="flex flex-col gap-1">
                     {p.items.map(it => (

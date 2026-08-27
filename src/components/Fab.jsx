@@ -6,7 +6,7 @@ export default function Fab({ onClick, count = 0 }) {
     <button
       onClick={onClick}
       aria-label="Abrir carrito"
-      className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] bg-emerald-600 text-white p-3 rounded-full shadow-lg hover:bg-emerald-700 active:scale-95 transition z-40"
+      className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] bg-gradient-to-br from-sky-500 to-blue-600 text-white p-3 rounded-full shadow-[0_10px_24px_rgba(37,99,235,0.45)] hover:brightness-105 active:scale-95 transition z-40"
     >
       <ShoppingCart className="w-6 h-6" />
       {count > 0 && (

@@ -1,6 +1,6 @@
 {
-  "name": "bodega-lista",
-  "version": "0.1.0",
+  "name": "strata-stock",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +21,7 @@
     "vite": "^5.0.0",
     "vite-plugin-pwa": "^1.2.0"
   },
-  "description": "Proyecto React mínimo para un catálogo y gestor de cuentas (deudas).",
+  "description": "StrataStock: control de ventas, compras, caja, digital y fiados para tu negocio.",
   "main": "service-worker.js",
   "repository": {
     "type": "git",
