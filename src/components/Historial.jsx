@@ -30,7 +30,7 @@ export default function Historial({ pedidos = [], clientes = [], onVolver, onDes
   };
 
   return (
-    <section className="max-w-2xl mx-auto px-4 py-5">
+    <section className="max-w-[1400px] mx-auto px-3 sm:px-6 py-5 sm:py-6">
       <button
         onClick={onVolver}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 bg-white border border-gray-200 rounded-full px-3.5 py-1.5 shadow-sm hover:bg-slate-50 hover:text-slate-900 active:scale-95 transition mb-4"

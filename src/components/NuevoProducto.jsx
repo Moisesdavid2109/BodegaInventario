@@ -82,8 +82,8 @@ export default function NuevoProducto({ onGuardar, onCancelar, editando = null }
   const inputEstilos = "border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500";
 
   return (
-    <section className="max-w-lg mx-auto px-4 py-6">
-      <div className="neu rounded-2xl p-5">
+    <section className="max-w-[1400px] mx-auto px-3 sm:px-6 py-5 sm:py-6">
+      <div className="neu rounded-2xl p-5 max-w-lg mx-auto">
         <h2 className="text-lg font-bold text-slate-900 mb-4">
           {editando ? 'Editar producto' : 'Nuevo producto'}
         </h2>

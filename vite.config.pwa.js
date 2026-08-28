@@ -7,6 +7,7 @@ export default {
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['icons/*.png'],
       devOptions: {
         enabled: false
       },
@@ -23,25 +24,25 @@ export default {
         categories: ['business', 'shopping', 'finance'],
         icons: [
           {
-            src: 'src/assets/icon-192.png',
+            src: 'icons/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'src/assets/icon-512.png',
+            src: 'icons/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'src/assets/icon-maskable-192.png',
+            src: 'icons/icon-maskable-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'maskable'
           },
           {
-            src: 'src/assets/icon-maskable-512.png',
+            src: 'icons/icon-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'

@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Fab from './components/Fab';
 import SelectorPerfil from './components/auth/SelectorPerfil';
 import Dashboard from './components/dashboard/Dashboard';
+import CajaHistorial from './components/dashboard/CajaHistorial';
 import Catalogo from './components/Catalogo';
 import NuevoProducto from './components/NuevoProducto';
 import Pedido from './components/Pedido';
@@ -185,6 +186,8 @@ function AppContent() {
 
       <main>
         {view === 'dashboard' && <Dashboard onNavigate={navegar} />}
+
+        {view === 'caja' && <CajaHistorial onVolver={() => setView('dashboard')} />}
 
           {view === 'catalogo' && (
             <Catalogo

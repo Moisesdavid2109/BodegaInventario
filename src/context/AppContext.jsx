@@ -5,7 +5,8 @@ import defaultData from '../data/products.json';
 const AppContext = createContext(null);
 
 function getTodayString() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function generarId() {
@@ -126,12 +127,12 @@ export function AppProvider({ children }) {
     };
   }, [perfilId]);
 
-  // Control general se reconecta cuando cambia el día
+  // Control general (caja total, sin separación por día)
   useEffect(() => {
     if (!perfilId) { setMovimientosGeneral([]); return; }
     const unsub = fs.escucharControlGeneral(perfilId, (m) => setMovimientosGeneral(m));
     return () => unsub?.();
-  }, [perfilId, hoy]);
+  }, [perfilId]);
 
   useEffect(() => {
     if (!perfilId) return;
@@ -219,6 +220,12 @@ export function AppProvider({ children }) {
     return fs.crearPerfil(nombre, pin);
   }, []);
 
+  const borrarCuenta = useCallback(async () => {
+    if (!perfilId) return;
+    await fs.borrarCuenta(perfilId);
+    logout();
+  }, [perfilId, logout]);
+
   // ── Clientes ──
   const crearCliente = useCallback(async (data) => {
     await fs.crearCliente(perfilId, data);
@@ -251,8 +258,15 @@ export function AppProvider({ children }) {
       return s + (t.tipo === 'gasto' ? -val : val);
     }, 0);
 
-  const ingresosHoy = movimientosGeneral.filter(m => m.tipo === 'ingreso').reduce((s, m) => s + (Number(m.monto) || 0), 0);
-  const gastosHoy = movimientosGeneral.filter(m => m.tipo === 'gasto').reduce((s, m) => s + (Number(m.monto) || 0), 0);
+  const ingresosTotales = movimientosGeneral.filter(m => m.tipo === 'ingreso').reduce((s, m) => s + (Number(m.monto) || 0), 0);
+  const gastosTotales = movimientosGeneral.filter(m => m.tipo === 'gasto').reduce((s, m) => s + (Number(m.monto) || 0), 0);
+
+  const ingresosHoy = movimientosGeneral
+    .filter(m => m.tipo === 'ingreso' && String(m.fecha || '').slice(0, 10) === hoy)
+    .reduce((s, m) => s + (Number(m.monto) || 0), 0);
+  const gastosHoy = movimientosGeneral
+    .filter(m => m.tipo === 'gasto' && String(m.fecha || '').slice(0, 10) === hoy)
+    .reduce((s, m) => s + (Number(m.monto) || 0), 0);
 
   const fiadosPendientes = fiados.filter(f => f.estado === 'pendiente');
   const fiadosVencidos = fiadosPendientes.filter(f => f.fechaLimitePago && f.fechaLimitePago < hoy);
@@ -311,7 +325,7 @@ export function AppProvider({ children }) {
   }, [perfilId]);
 
   const valor = {
-    perfilActivo, cargando, login, logout, crearPerfil,
+    perfilActivo, cargando, login, logout, crearPerfil, borrarCuenta,
     products, agregarProducto, actualizarProducto, actualizarPrecio, eliminarProducto,
     people,
     clientes, crearCliente, eliminarCliente,
@@ -322,7 +336,7 @@ export function AppProvider({ children }) {
     fiados, fiadosPendientes, fiadosVencidos, totalPorCobrar,
     agregarFiado, registrarPagoFiado, actualizarFiado,
     pedidos, agregarPedido, eliminarPedido,
-    ingresosHoy, gastosHoy, ventasEfectivoHoy,
+    ingresosTotales, gastosTotales, ingresosHoy, gastosHoy, ventasEfectivoHoy,
     exportarRespaldo, importarRespaldo,
   };
 

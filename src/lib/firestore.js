@@ -10,6 +10,11 @@ function generarId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+function fechaLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 // ─── Perfiles ───
 export async function crearPerfil(nombre, pin) {
   return addDoc(collection(db, 'perfiles'), {
@@ -27,6 +32,26 @@ export async function obtenerPerfiles() {
 
 export async function actualizarPerfil(id, data) {
   return updateDoc(doc(db, 'perfiles', id), data);
+}
+
+async function borrarDocsDe(coleccion, campo, valor) {
+  const snap = await getDocs(query(collection(db, coleccion), where(campo, '==', valor)));
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+}
+
+export async function borrarCuenta(perfilId) {
+  const colecciones = [
+    ['perfil_precios', 'perfilId'],
+    ['transacciones_banco', 'perfilId'],
+    ['fiados', 'perfilId'],
+    ['pedidos', 'perfilId'],
+    ['clientes', 'perfilId'],
+    ['control_general', 'perfilId'],
+    ['cajas', 'perfilId'],
+    ['movimientos_caja', 'perfilId'],
+  ];
+  await Promise.all(colecciones.map(([c, campo]) => borrarDocsDe(c, campo, perfilId)));
+  await deleteDoc(doc(db, 'perfiles', perfilId));
 }
 
 // ─── Productos (CATÁLOGO COMPARTIDO — sin perfilId) ───
@@ -324,21 +349,19 @@ export async function eliminarCliente(id) {
   return updateDoc(doc(db, 'clientes', id), { activo: false });
 }
 
-// ─── Control General ───
+// ─── Control General (Caja total) ───
 export function escucharControlGeneral(perfilId, callback) {
-  const hoy = new Date().toISOString().slice(0, 10);
   const q = query(collection(db, 'control_general'), where('perfilId', '==', perfilId));
   return onSnapshot(q, (snap) => {
     const items = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-    const hoyItems = items.filter(m => String(m.fecha || '').slice(0, 10) === hoy);
-    hoyItems.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
-    callback(hoyItems);
+    items.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+    callback(items);
   }, (err) => console.error('Error escuchando control general:', err));
 }
 
 export async function agregarMovimientoGeneral(perfilId, data) {
   return addDoc(collection(db, 'control_general'), {
-    ...limpiarObj({ perfilId, fecha: data.fecha || new Date().toISOString().slice(0, 10), ...data }),
+    ...limpiarObj({ perfilId, fecha: data.fecha || fechaLocal(), ...data }),
     createdAt: serverTimestamp(),
   });
 }

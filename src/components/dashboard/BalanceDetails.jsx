@@ -20,13 +20,13 @@ function parseNumero(v) {
 }
 
 export default function BalanceDetails() {
-  const { ingresosHoy, gastosHoy, transaccionesBanco, agregarMovimientoGeneral } = useApp();
+  const { ingresosTotales, gastosTotales, ingresosHoy, gastosHoy, transaccionesBanco, agregarMovimientoGeneral } = useApp();
   const [tipo, setTipo] = useState(null); // null | 'ingreso' | 'gasto'
   const [concepto, setConcepto] = useState('');
   const [monto, setMonto] = useState('');
   const [guardando, setGuardando] = useState(false);
 
-  const saldo = (ingresosHoy || 0) - (gastosHoy || 0);
+  const saldo = (ingresosTotales || 0) - (gastosTotales || 0);
 
   const totalBs = (transaccionesBanco || []).reduce((s, t) => {
     if ((t.moneda || 'Bs') !== 'Bs') return s;

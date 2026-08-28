@@ -41,7 +41,7 @@ export default function Catalogo({ products = [], onAddToCart, onNuevoProducto, 
   }, [products, busqueda, categoria]);
 
   return (
-    <section className="max-w-3xl mx-auto px-4 py-5">
+    <section className="max-w-[1400px] mx-auto px-3 sm:px-6 py-5 sm:py-6">
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-40">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />

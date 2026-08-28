@@ -11,11 +11,12 @@ const navItems = [
   { id: 'venta', label: 'VENTAS' },
   { id: 'compra', label: 'COMPRAS' },
   { id: 'bancos', label: 'BANCOS' },
+  { id: 'caja', label: 'CAJA' },
   { id: 'fiados', label: 'FIADOS' },
   { id: 'historial', label: 'HISTORIAL' },
 ];
 
-function LogoStrata({ className = 'w-9 h-8' }) {
+function LogoStrata({ className = 'w-11 h-10' }) {
   return (
     <svg viewBox="0 0 44 32" className={className} fill="none" aria-hidden="true">
       <path d="M3 21 C 10 9, 17 27, 25 15 S 37 9, 40 15" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
@@ -66,14 +67,14 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-40 bg-white/75 backdrop-blur-md border-b border-white/60 shadow-sm pt-[env(safe-area-inset-top)]">
-      <div className="flex items-center justify-between gap-2 px-3 sm:px-6 h-16 max-w-[1400px] mx-auto">
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-6 h-20 max-w-[1400px] mx-auto">
         {/* Izquierda: logo + marca */}
         <div className="flex items-center gap-2 min-w-0">
           {!esEscritorio && (
             <div className="relative" ref={menuRef}>
               <button onClick={() => setMenuAbierto(o => !o)} aria-label="Menú"
-                className="neu-btn p-2 rounded-xl text-slate-600 shrink-0">
-                <Menu className="w-5 h-5" />
+                className="neu-btn p-2.5 rounded-xl text-slate-600 shrink-0">
+                <Menu className="w-6 h-6" />
               </button>
               {menuAbierto && (
                 <div className="absolute left-0 top-full mt-2 w-64 neu rounded-2xl p-2 z-50">
@@ -104,7 +105,7 @@ export default function Header({
           )}
           <button onClick={() => ir('dashboard')} className="flex items-center gap-2 shrink-0 group">
             <LogoStrata />
-            <span className="text-lg font-extrabold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+            <span className="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
               Strata<span className="text-blue-600">Stock</span>
             </span>
           </button>
@@ -112,10 +113,10 @@ export default function Header({
 
         {/* Centro: navegación (desktop) */}
         {esEscritorio && (
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1 overflow-x-auto">
             {navItems.map(nav => (
               <button key={nav.id} onClick={() => ir(nav.id)}
-                className={`px-3 py-2 rounded-xl text-[12px] font-bold tracking-wide transition-all ${
+                className={`px-3 shrink-0 whitespace-nowrap py-2.5 rounded-xl text-[13px] font-bold tracking-wide transition-all ${
                   view === nav.id
                     ? 'bg-blue-50 text-blue-700 shadow-[inset_0_2px_6px_rgba(37,99,235,0.08)]'
                     : 'text-slate-500 hover:text-blue-600 hover:bg-blue-50/50'
@@ -130,14 +131,14 @@ export default function Header({
         <div className="flex items-center gap-1 sm:gap-1.5" ref={areaRef}>
           {esEscritorio && puedeInstalar && onInstalar && (
             <button onClick={onInstalar} title="Instalar la app"
-              className="neu-btn p-2.5 rounded-xl text-slate-600">
-              <Download className="w-4.5 h-4.5" />
+              className="neu-btn p-3 rounded-xl text-slate-600">
+              <Download className="w-5 h-5" />
             </button>
           )}
           {esEscritorio && (
             <button onClick={() => ir('respaldo')} title="Configuración y respaldo"
-              className="neu-btn p-2.5 rounded-xl text-slate-600">
-              <Settings className="w-4.5 h-4.5" />
+              className="neu-btn p-3 rounded-xl text-slate-600">
+              <Settings className="w-5 h-5" />
             </button>
           )}
 
@@ -145,10 +146,10 @@ export default function Header({
           <div className="relative">
             <button onClick={() => setAbierto(abierto === 'campana' ? null : 'campana')}
               aria-label="Notificaciones"
-              className="neu-btn p-2.5 rounded-xl text-slate-600">
-              <Bell className="w-4.5 h-4.5" />
+              className="neu-btn p-3 rounded-xl text-slate-600">
+              <Bell className="w-5 h-5" />
               {alertas.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center leading-none">
                   {alertas.length}
                 </span>
               )}
@@ -177,10 +178,10 @@ export default function Header({
 
           {/* Carrito */}
           <button onClick={onOpenCart} aria-label="Abrir carrito"
-            className="relative neu-btn p-2.5 rounded-xl text-slate-600">
-            <ShoppingCart className="w-4.5 h-4.5" />
+            className="relative neu-btn p-3 rounded-xl text-slate-600">
+            <ShoppingCart className="w-5 h-5" />
             {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center leading-none">
+              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center leading-none">
                 {cartCount}
               </span>
             )}
@@ -190,8 +191,8 @@ export default function Header({
           <div className="relative">
             <button onClick={() => setAbierto(abierto === 'perfil' ? null : 'perfil')}
               aria-label="Perfil"
-              className="flex items-center gap-2 neu-btn rounded-full py-1 pl-1 pr-2.5 text-slate-600">
-              <span className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-white text-[13px] font-bold flex items-center justify-center shadow-inner">
+              className="flex items-center gap-2 neu-btn rounded-full py-1.5 pl-1.5 pr-3 text-slate-600">
+              <span className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-white text-sm font-bold flex items-center justify-center shadow-inner">
                 {iniciales}
               </span>
               {esEscritorio && <ChevronDown className="w-4 h-4" />}

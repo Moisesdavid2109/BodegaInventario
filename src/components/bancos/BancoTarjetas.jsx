@@ -29,7 +29,7 @@ function formatearFecha(iso) {
   } catch { return ''; }
 }
 
-function getTodayString() { return new Date().toISOString().slice(0, 10); }
+function getTodayString() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 
 const TIPOS = [
   { id: 'transferencia', label: 'Transferencia', color: 'blue', moneda: 'Bs' },
@@ -104,7 +104,7 @@ export default function BancoTarjetas({ onVolver }) {
   };
 
   return (
-    <section className="max-w-3xl mx-auto px-4 py-5 pb-28">
+    <section className="max-w-[1400px] mx-auto px-3 sm:px-6 py-5 sm:py-6">
       <button onClick={onVolver}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 bg-white border border-gray-200 rounded-full px-3.5 py-1.5 shadow-sm hover:bg-slate-50 transition mb-4">
         <ArrowLeft className="w-4 h-4" /> Volver
