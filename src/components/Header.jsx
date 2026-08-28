@@ -105,9 +105,9 @@ export default function Header({
           )}
           <button onClick={() => ir('dashboard')} className="flex items-center gap-2 shrink-0 group">
             <LogoStrata />
-            <span className="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
-              Strata<span className="text-blue-600">Stock</span>
-            </span>
+<span className="hidden sm:inline text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                Strata<span className="text-blue-600">Stock</span>
+              </span>
           </button>
         </div>
 

@@ -54,7 +54,7 @@ export default function CajaHistorial({ onVolver }) {
         </h2>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
         <div className="neu rounded-2xl p-3">
           <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Saldo</div>
           <div className={`text-sm sm:text-base font-extrabold mt-0.5 ${saldo >= 0 ? 'text-slate-900' : 'text-red-500'}`}>

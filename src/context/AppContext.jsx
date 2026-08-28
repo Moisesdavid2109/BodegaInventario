@@ -55,6 +55,7 @@ export function AppProvider({ children }) {
 
   const [productosShared, setProductosShared] = useState([]);
   const [preciosMap, setPreciosMap] = useState({});
+  const [stockMap, setStockMap] = useState({});
   const [people, setPeople] = useState([]);
   const [movimientosGeneral, setMovimientosGeneral] = useState([]);
   const [transaccionesBanco, setTransaccionesBanco] = useState([]);
@@ -67,7 +68,7 @@ export function AppProvider({ children }) {
 
   const perfilId = perfilActivo?.id;
 
-  // Merge: productos compartidos + precios del perfil
+  // Merge: productos compartidos + precios y stock del perfil
   const products = useMemo(() => {
     return productosShared.map(p => {
       const precio = preciosMap[p.id];
@@ -76,12 +77,12 @@ export function AppProvider({ children }) {
         name: p.name || p.nombre || '',
         category: p.category || p.categoria || 'General',
         image: p.image || p.imagen || null,
-        stock: Number(p.stock ?? 0) || 0,
+        stock: stockMap[p.id] != null ? stockMap[p.id] : 0,
         price: precio?.price ?? 0,
         costPrice: precio?.costPrice ?? 0,
       };
     });
-  }, [productosShared, preciosMap]);
+  }, [productosShared, preciosMap, stockMap]);
 
   // Escuchar productos compartidos + precios del perfil + datos
   useEffect(() => {
@@ -110,6 +111,8 @@ export function AppProvider({ children }) {
       setPreciosMap(mapa);
     });
 
+    const unsubStock = fs.escucharStock(perfilId, (mapa) => setStockMap(mapa));
+
     const unsubBanco = fs.escucharTransaccionesBanco(perfilId, (t) => setTransaccionesBanco(t));
     const unsubFiados = fs.escucharFiados(perfilId, (f) => setFiados(f));
     const unsubPedidos = fs.escucharPedidos(perfilId, (p) => setPedidos(p));
@@ -120,6 +123,7 @@ export function AppProvider({ children }) {
     return () => {
       unsubProductos?.();
       unsubPrecios?.();
+      unsubStock?.();
       unsubBanco?.();
       unsubFiados?.();
       unsubPedidos?.();
@@ -153,6 +157,7 @@ export function AppProvider({ children }) {
     localStorage.removeItem('perfil_activo');
     setProductosShared([]);
     setPreciosMap({});
+    setStockMap({});
     setPeople([]);
     setMovimientosGeneral([]);
     setTransaccionesBanco([]);
@@ -195,10 +200,12 @@ export function AppProvider({ children }) {
   }, []);
 
   // ── Productos (catálogo compartido) ──
-  const agregarProducto = useCallback(async (prod, precioVenta, precioCompra) => {
-    const docRef = await fs.agregarProducto(prod);
+  const agregarProducto = useCallback(async (prod, precioVenta, precioCompra, stock) => {
+    const { stock: stockShared, ...producto } = prod;
+    const docRef = await fs.agregarProducto(producto);
     if (perfilId) {
       await fs.guardarPrecio(perfilId, docRef.id, precioVenta || 0, precioCompra || 0);
+      await fs.guardarStock(perfilId, docRef.id, stock ?? stockShared ?? 0);
     }
     return docRef;
   }, [perfilId]);
@@ -209,6 +216,10 @@ export function AppProvider({ children }) {
 
   const actualizarPrecio = useCallback(async (productId, price, costPrice) => {
     if (perfilId) await fs.guardarPrecio(perfilId, productId, price, costPrice);
+  }, [perfilId]);
+
+  const actualizarStock = useCallback(async (productId, stock) => {
+    if (perfilId) await fs.guardarStock(perfilId, productId, stock);
   }, [perfilId]);
 
   const eliminarProducto = useCallback(async (id) => {
@@ -305,6 +316,7 @@ export function AppProvider({ children }) {
       const { id, ...rest } = p;
       if (id) {
         await fs.actualizarProducto(id, rest).catch(() => fs.agregarProducto({ id, ...rest }));
+        if (p.stock != null) await fs.guardarStock(perfilId, id, Number(p.stock) || 0);
       }
     }
     for (const p of (datos.pedidos || [])) {
@@ -326,7 +338,7 @@ export function AppProvider({ children }) {
 
   const valor = {
     perfilActivo, cargando, login, logout, crearPerfil, borrarCuenta,
-    products, agregarProducto, actualizarProducto, actualizarPrecio, eliminarProducto,
+    products, agregarProducto, actualizarProducto, actualizarPrecio, actualizarStock, eliminarProducto,
     people,
     clientes, crearCliente, eliminarCliente,
     movimientosGeneral,

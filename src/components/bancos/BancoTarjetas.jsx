@@ -110,12 +110,12 @@ export default function BancoTarjetas({ onVolver }) {
         <ArrowLeft className="w-4 h-4" /> Volver
       </button>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
           <CreditCard className="w-5 h-5 text-blue-600" /> Bancos y Tarjetas
         </h2>
         <button onClick={() => { setMostrarLista(!mostrarLista); resetForm(); }}
-          className="flex items-center gap-1.5 bg-slate-100 text-slate-700 rounded-full px-4 py-2 text-sm font-semibold hover:bg-slate-200 active:scale-95 transition">
+          className="flex items-center gap-1.5 bg-slate-100 text-slate-700 rounded-full px-4 py-2 text-sm font-semibold hover:bg-slate-200 active:scale-95 transition whitespace-nowrap">
           <List className="w-4 h-4" /> Ver transacciones
         </button>
       </div>

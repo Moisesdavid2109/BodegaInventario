@@ -23,7 +23,7 @@ function consultaEscritorio() {
 function AppContent() {
   const {
     perfilActivo, cargando, login,
-    products, agregarProducto, actualizarProducto, actualizarPrecio, eliminarProducto,
+    products, agregarProducto, actualizarProducto, actualizarPrecio, actualizarStock, eliminarProducto,
     clientes, agregarFiado, pedidos, agregarPedido,
     exportarRespaldo, importarRespaldo,
   } = useApp();
@@ -92,7 +92,7 @@ function AppContent() {
       if (!prod) return;
       const actual = Number(prod.stock) || 0;
       const nuevo = direccion === 'restar' ? Math.max(0, actual - it.qty) : actual + it.qty;
-      actualizarProducto(prod.id, { stock: nuevo });
+      actualizarStock(prod.id, nuevo);
     });
   };
 
@@ -204,12 +204,13 @@ function AppContent() {
               editando={editando}
               onGuardar={async (prod) => {
                 try {
-                  const { price, costPrice, ...producto } = { ...prod, id: prod.id || undefined };
+                  const { price, costPrice, stock, ...producto } = { ...prod, id: prod.id || undefined };
                   if (prod.id) {
                     await actualizarProducto(prod.id, producto);
                     await actualizarPrecio(prod.id, price, costPrice);
+                    await actualizarStock(prod.id, stock ?? 0);
                   } else {
-                    await agregarProducto(producto, price, costPrice);
+                    await agregarProducto(producto, price, costPrice, stock ?? 0);
                   }
                   setEditando(null);
                   setView('catalogo');

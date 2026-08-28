@@ -75,12 +75,12 @@ export default function RegistroFiados({ onVolver }) {
         <ArrowLeft className="w-4 h-4" /> Volver
       </button>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
           <Users className="w-5 h-5 text-purple-600" /> Fiados
         </h2>
         <button onClick={() => setMostrarFormCliente(true)}
-          className="flex items-center gap-1.5 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-full px-4 py-2 text-sm font-semibold hover:brightness-105 active:scale-95 transition">
+          className="flex items-center gap-1.5 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-full px-4 py-2 text-sm font-semibold hover:brightness-105 active:scale-95 transition whitespace-nowrap">
           <Plus className="w-4 h-4" /> Nuevo cliente
         </button>
       </div>

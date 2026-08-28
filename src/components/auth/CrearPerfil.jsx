@@ -40,7 +40,7 @@ export default function CrearPerfil({ onCrear, onCancelar }) {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-sm">
+    <div className="relative z-10 bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-blue-900/10 ring-1 ring-white/70 p-8 w-full max-w-sm animate-[fadeIn_.3s_ease]">
       <button onClick={onCancelar}
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-4 transition">
         <ArrowLeft className="w-4 h-4" /> Volver

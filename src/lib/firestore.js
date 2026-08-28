@@ -42,6 +42,7 @@ async function borrarDocsDe(coleccion, campo, valor) {
 export async function borrarCuenta(perfilId) {
   const colecciones = [
     ['perfil_precios', 'perfilId'],
+    ['perfil_stock', 'perfilId'],
     ['transacciones_banco', 'perfilId'],
     ['fiados', 'perfilId'],
     ['pedidos', 'perfilId'],
@@ -155,6 +156,33 @@ export async function sembrarPrecios(perfilId, productos) {
       });
     }
   }
+}
+
+// ─── Stock por perfil (perfilId + productId → stock) ───
+export function escucharStock(perfilId, callback) {
+  const q = query(collection(db, 'perfil_stock'), where('perfilId', '==', perfilId));
+  return onSnapshot(q, (snap) => {
+    const mapa = {};
+    snap.docs.forEach(d => {
+      mapa[d.data().productId] = Number(d.data().stock) || 0;
+    });
+    callback(mapa);
+  });
+}
+
+export async function guardarStock(perfilId, productId, stock) {
+  const q = query(
+    collection(db, 'perfil_stock'),
+    where('perfilId', '==', perfilId),
+    where('productId', '==', productId)
+  );
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    return updateDoc(snap.docs[0].ref, { stock });
+  }
+  return addDoc(collection(db, 'perfil_stock'), {
+    perfilId, productId, stock, createdAt: serverTimestamp(),
+  });
 }
 
 // ─── Caja ───
