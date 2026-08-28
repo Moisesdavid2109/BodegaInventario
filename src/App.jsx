@@ -25,7 +25,7 @@ function AppContent() {
     perfilActivo, cargando, login,
     products, agregarProducto, actualizarProducto, actualizarPrecio, actualizarStock, eliminarProducto,
     clientes, agregarFiado, pedidos, agregarPedido,
-    exportarRespaldo, importarRespaldo,
+    agregarMovimientoGeneral, exportarRespaldo, importarRespaldo,
   } = useApp();
 
   const [view, setView] = useState('dashboard');
@@ -102,7 +102,7 @@ function AppContent() {
         tipo: 'venta', fecha: new Date().toISOString(), items, total,
         fiadoPersonaId: fiadoPersonaId || null,
       };
-      await agregarPedido(pedido);
+const pedidoRef = await agregarPedido(pedido);
       ajustarStock(items, 'restar');
 
       if (fiadoPersonaId) {
@@ -125,6 +125,10 @@ function AppContent() {
           estado: 'pendiente',
           pagos: [],
         });
+      } else {
+        await agregarMovimientoGeneral({
+          tipo: 'ingreso', concepto: 'Venta', monto: total, pedidoId: pedidoRef?.id,
+        });
       }
 
       setPedidoItems([]);
@@ -141,8 +145,11 @@ function AppContent() {
         tipo: 'compra', fecha: new Date().toISOString(), items, total,
         proveedor: proveedor || null,
       };
-      await agregarPedido(pedido);
+      const pedidoRef = await agregarPedido(pedido);
       ajustarStock(items, 'sumar');
+      await agregarMovimientoGeneral({
+        tipo: 'gasto', concepto: 'Compra', monto: total, pedidoId: pedidoRef?.id,
+      });
       setPedidoItems([]);
       setView('historial');
     } catch (err) {

@@ -1,9 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
-import { subirComprobante } from '../../lib/firestore';
+import { comprimirImagen } from '../../lib/firestore';
 import { ArrowLeft, Camera, Trash2, CreditCard, Image as ImageIcon, List, ChevronDown, Plus, Minus, ArrowUpLeft, ArrowDownLeft } from 'lucide-react';
-import { updateDoc, doc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 
 function formatearMoneda(n, moneda = 'COP') {
   if (moneda === 'Bs') {
@@ -48,6 +46,7 @@ export default function BancoTarjetas({ onVolver }) {
   const [foto, setFoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [guardando, setGuardando] = useState(false);
+  const [comprobanteExpandido, setComprobanteExpandido] = useState(null);
   const fileRef = useRef();
 
   const tipoActual = TIPOS.find(t => t.id === tipo);
@@ -76,17 +75,20 @@ export default function BancoTarjetas({ onVolver }) {
     if (!perfilActivo?.id) return alert('Error: no hay perfil activo');
     setGuardando(true);
     try {
+      let comprobanteUrl = null;
+      if (foto) {
+        comprobanteUrl = await comprimirImagen(foto, 220);
+        if ((comprobanteUrl.length * 3) / 4 > 800 * 1024) {
+          setGuardando(false);
+          return alert('La imagen es demasiado pesada. Usa una foto más pequeña.');
+        }
+      }
       const docRef = await agregarTransaccionBanco({
         tipo: tipoMov, subtipo: tipo, monto: montoNum, moneda, fecha, cliente: cliente.trim() || null,
-        comentario: comentario.trim() || null, comprobanteUrl: null,
+        comentario: comentario.trim() || null, comprobanteUrl,
       });
       setMonto(''); setCliente(''); setComentario(''); setFoto(null); setPreview(null);
       alert('Transacción guardada');
-      if (foto && docRef?.id) {
-        subirComprobante(perfilActivo.id, docRef.id, foto)
-          .then(url => updateDoc(doc(db, 'transacciones_banco', docRef.id), { comprobanteUrl: url }))
-          .catch(err => console.warn('Error subiendo comprobante:', err));
-      }
     } catch (e) {
       console.error('Error banco:', e);
       alert('Error guardando: ' + e.message);
@@ -161,10 +163,17 @@ export default function BancoTarjetas({ onVolver }) {
                   {t.cliente && <p className="text-sm text-slate-600">{t.cliente}</p>}
                   {t.comentario && <p className="text-xs text-gray-400 mt-0.5">{t.comentario}</p>}
                   {t.comprobanteUrl && (
-                    <a href={t.comprobanteUrl} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 mt-2">
-                      <ImageIcon className="w-3 h-3" /> Ver comprobante
-                    </a>
+                    <>
+                      <button onClick={() => setComprobanteExpandido(prev => prev === t.id ? null : t.id)}
+                        className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 mt-2 transition">
+                        <ImageIcon className="w-3 h-3" />
+                        {comprobanteExpandido === t.id ? 'Ocultar comprobante' : 'Ver comprobante'}
+                      </button>
+                      {comprobanteExpandido === t.id && (
+                        <img src={t.comprobanteUrl} alt="Comprobante"
+                          className="mt-2 rounded-lg border border-gray-100 bg-slate-50 w-full max-h-96 object-contain" />
+                      )}
+                    </>
                   )}
                 </li>
               );

@@ -323,8 +323,8 @@ export async function eliminarPedido(id) {
   return deleteDoc(doc(db, 'pedidos', id));
 }
 
-// ─── Comprobantes (Storage) ───
-async function comprimirImagen(base64, maxKB = 300) {
+// ─── Comprobantes ───
+export async function comprimirImagen(base64, maxKB = 300) {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {

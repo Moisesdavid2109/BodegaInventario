@@ -184,7 +184,12 @@ export function AppProvider({ children }) {
     await fs.registrarPagoFiado(fiadoId, {
       id: generarId(), monto, fecha: new Date().toISOString(),
     });
-  }, []);
+    if (perfilId) {
+      await fs.agregarMovimientoGeneral(perfilId, {
+        tipo: 'ingreso', concepto: 'Abono de fiado', monto,
+      });
+    }
+  }, [perfilId]);
 
   const actualizarFiado = useCallback(async (id, data) => {
     await fs.actualizarFiado(id, data);
@@ -192,7 +197,7 @@ export function AppProvider({ children }) {
 
   // ── Pedidos ──
   const agregarPedido = useCallback(async (pedido) => {
-    await fs.agregarPedido(perfilId, pedido);
+    return fs.agregarPedido(perfilId, pedido);
   }, [perfilId]);
 
   const eliminarPedido = useCallback(async (id) => {

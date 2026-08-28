@@ -105,7 +105,11 @@ export default function SummaryChart() {
       else if (tipo === 'gasto' || tipo === 'compra') map[key].expense += val;
     };
 
-    (pedidos || []).forEach(p => add(keyDe(periodo, toFecha(p.fecha)), p.tipo, p.total));
+    const pedidosEnCaja = new Set((movimientosGeneral || []).map(m => m.pedidoId).filter(Boolean));
+    (pedidos || []).forEach(p => {
+      if (pedidosEnCaja.has(p.id)) return;
+      add(keyDe(periodo, toFecha(p.fecha)), p.tipo, p.total);
+    });
     (transaccionesBanco || []).forEach(t => add(keyDe(periodo, toFecha(t.fecha || t.createdAt)), t.tipo, t.monto));
     (movimientosGeneral || []).forEach(m => add(keyDe(periodo, toFecha(m.fecha)), m.tipo, m.monto));
 
