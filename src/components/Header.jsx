@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, ShoppingCart, Download } from 'lucide-react';
+import { Menu, ShoppingCart, Download, Store } from 'lucide-react';
 
 export default function Header({ onOpenMenu, onOpenCart, cartCount = 0, puedeInstalar = false, onInstalar, esEscritorio = false }) {
   return (
@@ -11,15 +11,19 @@ export default function Header({ onOpenMenu, onOpenCart, cartCount = 0, puedeIns
           <button
             onClick={onOpenMenu}
             aria-label="Menú"
-            className="p-2 rounded-xl hover:bg-slate-100 text-slate-600"
+            className="flex items-center gap-2 p-2 rounded-xl hover:bg-slate-100 text-slate-600"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5" />
+            <span className="text-sm font-medium">Menú</span>
           </button>
         )}
 
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight flex-1 text-center">
-          BodegaLista
-        </h1>
+        <div className="flex items-center gap-2 flex-1 justify-center">
+          <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+            <Store className="w-4 h-4" />
+          </div>
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">BodegaLista</h1>
+        </div>
 
         <div className="flex items-center gap-0.5">
           {puedeInstalar && onInstalar && (
@@ -29,7 +33,7 @@ export default function Header({ onOpenMenu, onOpenCart, cartCount = 0, puedeIns
               title="Instalar la app"
               className="p-2 rounded-xl hover:bg-slate-100 text-slate-600"
             >
-              <Download className="w-6 h-6" />
+              <Download className="w-5 h-5" />
             </button>
           )}
           <button
@@ -37,7 +41,7 @@ export default function Header({ onOpenMenu, onOpenCart, cartCount = 0, puedeIns
             aria-label="Abrir carrito"
             className="relative p-2 rounded-xl hover:bg-slate-100 text-slate-600"
           >
-            <ShoppingCart className="w-6 h-6" />
+            <ShoppingCart className="w-5 h-5" />
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
                 {cartCount}

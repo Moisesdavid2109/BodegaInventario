@@ -1,33 +1,21 @@
 import React from 'react';
-import { X, Menu, Store, LayoutGrid, PackagePlus, ShoppingCart, PackageMinus, History, Wallet, BarChart3, Download, HardDriveDownload } from 'lucide-react';
+import {
+  X, Menu, LayoutGrid, ShoppingCart, CreditCard, ShoppingBag,
+  Users, History, Download, HardDriveDownload, LayoutDashboard
+} from 'lucide-react';
 
-const secciones = [
-  {
-    titulo: 'Movimiento',
-    items: [
-      { id: 'catalogo', label: 'Catálogo', icon: LayoutGrid },
-      { id: 'venta', label: 'Venta', icon: ShoppingCart },
-      { id: 'compra', label: 'Compra', icon: PackageMinus },
-      { id: 'historial', label: 'Historial de pedidos', icon: History },
-    ],
-  },
-  {
-    titulo: 'Finanzas',
-    items: [
-      { id: 'caja', label: 'Gestor de cuentas', icon: Wallet },
-      { id: 'reportes', label: 'Reportes y ganancias', icon: BarChart3 },
-    ],
-  },
-  {
-    titulo: 'Administración',
-    items: [
-      { id: 'nuevoProducto', label: 'Nuevo producto', icon: PackagePlus },
-      { id: 'respaldo', label: 'Copia de seguridad', icon: Download },
-    ],
-  },
+const items = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'catalogo', label: 'Catálogo', icon: LayoutGrid },
+  { id: 'venta', label: 'Venta', icon: ShoppingCart },
+  { id: 'compra', label: 'Compra', icon: ShoppingBag },
+  { id: 'bancos', label: 'Bancos y Tarjetas', icon: CreditCard },
+  { id: 'fiados', label: 'Fiados', icon: Users },
+  { id: 'historial', label: 'Historial', icon: History },
+  { id: 'respaldo', label: 'Copia de seguridad', icon: Download },
 ];
 
-export default function Sidebar({ open, onClose, view, onNavigate, puedeInstalar = false, onInstalar, esEscritorio = false, onToggle }) {
+export default function Sidebar({ open, onClose, view, onNavigate, puedeInstalar = false, onInstalar, esEscritorio = false, onToggle, perfilActivo, onLogout }) {
   const expandido = open;
   return (
     <>
@@ -49,73 +37,63 @@ export default function Sidebar({ open, onClose, view, onNavigate, puedeInstalar
         aria-hidden={esEscritorio ? false : !open}
       >
         {esEscritorio ? (
-          <div className={`flex items-center h-14 border-b border-gray-100 shrink-0 ${expandido ? 'px-2 justify-start' : 'justify-center'}`}>
-            <button
-              onClick={onToggle}
-              aria-label="Alternar menú"
-              className="p-2 rounded-xl hover:bg-slate-100 text-slate-600"
-            >
+          <div className={`flex items-center h-14 border-b border-gray-100 shrink-0 ${expandido ? 'px-3 justify-start gap-2' : 'justify-center'}`}>
+            <button onClick={onToggle} aria-label="Alternar menú" className="p-2 rounded-xl hover:bg-slate-100 text-slate-600">
               <Menu className="w-5 h-5" />
             </button>
             {expandido && (
-              <div className="w-9 h-9 ml-1 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                <Store className="w-5 h-5" />
-              </div>
+              <span className="text-base font-bold text-slate-900 truncate">{perfilActivo?.nombre || 'Bodega'}</span>
             )}
           </div>
         ) : (
           <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100 shrink-0">
-            <h3 className="font-semibold text-slate-900">Menú</h3>
-            <button
-              onClick={onClose}
-              aria-label="Cerrar menú"
-              className="p-2 rounded-xl hover:bg-slate-100 text-slate-500"
-            >
+            <span className="font-bold text-base text-slate-900">{perfilActivo?.nombre || 'Bodega'}</span>
+            <button onClick={onClose} aria-label="Cerrar menú" className="p-2 rounded-xl hover:bg-slate-100 text-slate-500">
               <X className="w-5 h-5" />
             </button>
           </div>
         )}
+
         <nav className={`flex flex-col gap-1 overflow-y-auto flex-1 ${expandido ? 'p-3' : 'p-2'}`}>
-          {secciones.map(({ titulo, items }) => (
-            <div key={titulo} className="flex flex-col gap-1">
-              {expandido && titulo && (
-                <p className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-                  {titulo}
-                </p>
+          {items.map(({ id, label, icon: Icon }, idx) => (
+            <React.Fragment key={id}>
+              {expandido && idx === items.length - 3 && (
+                <div className="border-t border-gray-100 my-2" />
               )}
-              {items.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => onNavigate(id)}
-                  title={expandido ? undefined : label}
-                  className={`${expandido ? 'flex items-center gap-3 px-4' : 'flex items-center justify-center'} py-3 rounded-xl font-medium transition-colors ${
-                    view === id
-                      ? 'bg-emerald-600 text-white'
-                      : 'text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  {expandido && <span className="truncate">{label}</span>}
-                </button>
-              ))}
-            </div>
+              <button
+                onClick={() => onNavigate(id)}
+                title={expandido ? undefined : label}
+                className={`${expandido ? 'flex items-center gap-3 px-4' : 'flex items-center justify-center'} py-3 rounded-xl font-medium transition-colors ${
+                  view === id
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                {expandido && <span className="truncate text-sm">{label}</span>}
+              </button>
+            </React.Fragment>
           ))}
         </nav>
-        {puedeInstalar && onInstalar && (
-          <div className={`border-t border-gray-100 shrink-0 ${expandido ? 'p-3' : 'p-2'}`}>
-            <button
-              onClick={() => { onInstalar(); onClose(); }}
-              title={expandido ? undefined : 'Instalar la app'}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-slate-800 active:scale-95 transition"
-            >
-              <HardDriveDownload className="w-4 h-4" />
-              {expandido && 'Instalar la app'}
-            </button>
-            {expandido && (
-              <p className="text-xs text-gray-400 mt-2 text-center">
-                Instálala en tu pantalla de inicio para usarla sin internet.
-              </p>
+
+        {perfilActivo && (
+          <div className={`border-t border-gray-100 shrink-0 ${expandido ? 'p-3' : 'p-2'} flex flex-col gap-2`}>
+            {puedeInstalar && onInstalar && (
+              <button
+                onClick={() => { onInstalar(); onClose(); }}
+                title={expandido ? undefined : 'Instalar la app'}
+                className={`${expandido ? 'flex items-center justify-center gap-2' : 'flex items-center justify-center'} bg-slate-900 text-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-slate-800 active:scale-95 transition`}
+              >
+                <HardDriveDownload className="w-4 h-4" />
+                {expandido && 'Instalar la app'}
+              </button>
             )}
+            <button
+              onClick={() => { onLogout(); onClose(); }}
+              className={`${expandido ? 'flex items-center justify-center gap-2' : 'flex items-center justify-center'} text-red-500 hover:bg-red-50 rounded-xl px-4 py-2.5 text-sm font-semibold transition`}
+            >
+              {expandido ? 'Cerrar sesión' : <X className="w-4 h-4" />}
+            </button>
           </div>
         )}
       </aside>

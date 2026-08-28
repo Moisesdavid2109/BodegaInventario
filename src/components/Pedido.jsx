@@ -7,7 +7,6 @@ function formatearMoneda(n) {
   return formato.format(Number(n));
 }
 
-// Parsea números escritos en formato colombiano ("1.500" -> 1500, "2.500,5" -> 2500.5)
 function parseNumero(v) {
   if (v == null) return NaN;
   let s = String(v).trim();
@@ -26,7 +25,7 @@ function parseNumero(v) {
 
 export default function Pedido({
   products = [],
-  people = [],
+  clientes = [],
   tipo = 'venta',
   items = [],
   setItems,
@@ -103,7 +102,7 @@ export default function Pedido({
     if (esVenta) {
       const sinStock = items.find(i => i.qty > (Number(i.product?.stock) || 0));
       if (sinStock) return setError(`Stock insuficiente de "${sinStock.product?.name}" (disponible: ${Number(sinStock.product?.stock) || 0}).`);
-      if (fiadoPersonaId && !people.some(p => p.id === fiadoPersonaId)) return setError('Selecciona un cliente válido.');
+      if (fiadoPersonaId && !clientes.some(c => c.id === fiadoPersonaId)) return setError('Selecciona un cliente válido.');
     }
     const pedido = items.map(i => ({ product: { ...i.product, price: i.precio }, qty: i.qty, precio: i.precio }));
     if (esVenta) {
@@ -125,45 +124,79 @@ export default function Pedido({
         Volver
       </button>
 
-      <h2 className="text-lg font-bold text-slate-900 mb-3">{esVenta ? 'Nueva venta' : 'Nueva compra'}</h2>
-
-      <div className={`text-xs font-medium mb-4 rounded-xl px-3 py-2 ${esVenta ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
+      <h2 className="text-lg font-bold text-slate-900 mb-1">{esVenta ? 'Nueva venta' : 'Lista de compras'}</h2>
+      <p className="text-xs text-gray-400 mb-4">
         {esVenta
-          ? 'Venta a cliente: suma a tu caja (o al fiado de un cliente), descuenta del stock y queda registrada en Caja.'
-          : 'Pedido de compra: se descuenta de tu caja, suma al stock y queda registrado en Caja.'}
-      </div>
+          ? 'Selecciona los productos y la cantidad. El precio de venta es el que cobras al cliente.'
+          : 'Arma tu lista de compras. El precio de compra es lo que pagas al proveedor (más barato).'}
+      </p>
 
-      {esVenta && people.length > 0 && (
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-slate-600 whitespace-nowrap">A fiado de:</span>
-          <select
-            value={fiadoPersonaId}
-            onChange={e => setFiadoPersonaId(e.target.value)}
-            className={`${inputEstilos} flex-1 bg-white`}
-          >
-            <option value="">Contado (suma a la caja)</option>
-            {people.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
+      {esVenta && (
+        <div className="bg-emerald-50 rounded-xl px-4 py-3 mb-4">
+          <label className="text-xs font-bold text-amber-800 mb-2 block uppercase tracking-wide">Tipo de venta</label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFiadoPersonaId('')}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition border-2 ${
+                fiadoPersonaId === '' ? 'border-emerald-500 bg-white text-emerald-700 shadow-sm' : 'border-emerald-200 text-emerald-600 hover:border-emerald-300'
+              }`}
+            >
+              Contado
+            </button>
+            <button
+              onClick={() => { if (clientes.length > 0) setFiadoPersonaId(clientes[0]?.id || ''); }}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition border-2 ${
+                fiadoPersonaId !== '' ? 'border-amber-500 bg-white text-amber-700 shadow-sm' : 'border-amber-200 text-amber-600 hover:border-amber-300'
+              }`}
+            >
+              Fiado
+            </button>
+          </div>
+          {fiadoPersonaId !== '' && (
+            <>
+              {clientes.length === 0 ? (
+                <p className="text-xs text-amber-600 mt-2 bg-amber-50 rounded-lg px-3 py-2">
+                  No hay clientes registrados. Ve a Fiados y registra uno primero.
+                </p>
+              ) : (
+                <select
+                  value={fiadoPersonaId}
+                  onChange={e => setFiadoPersonaId(e.target.value)}
+                  className={`${inputEstilos} w-full bg-white mt-2`}
+                >
+                  {clientes.map(c => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+              )}
+            </>
+          )}
+          <p className="text-[11px] text-emerald-600 mt-2">
+            {fiadoPersonaId === ''
+              ? 'El monto se suma a tu caja de hoy.'
+              : 'Se registra como deuda del cliente en Fiados.'}
+          </p>
         </div>
       )}
 
       {!esVenta && (
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-slate-600 whitespace-nowrap">Proveedor:</span>
+        <div className="bg-blue-50 rounded-xl px-4 py-3 mb-4">
+          <label className="text-xs font-bold text-blue-800 mb-2 block uppercase tracking-wide">Proveedor</label>
           <input
             value={proveedor}
             onChange={e => setProveedor(e.target.value)}
             placeholder="Nombre del proveedor (opcional)"
-            className={`${inputEstilos} flex-1`}
+            className={`${inputEstilos} w-full bg-white`}
           />
+          <p className="text-[11px] text-blue-600 mt-2">
+            El monto se descuenta de tu caja y el stock se actualiza con los precios de compra.
+          </p>
         </div>
       )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
         <h3 className="font-semibold text-slate-900 mb-3 text-sm">
-          {esVenta ? 'Agregar productos a la venta' : 'Agregar productos al pedido de compra'}
+          {esVenta ? 'Productos a vender' : 'Productos a comprar'}
         </h3>
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -191,7 +224,7 @@ export default function Pedido({
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-slate-900 text-sm truncate">{p.name}</div>
                     <div className="text-xs text-gray-400 flex items-center gap-2">
-                      <span>{formatearMoneda(p.price)}</span>
+                      <span className="font-semibold text-slate-600">{formatearMoneda(esVenta ? p.price : p.costPrice)}</span>
                       {esVenta && (
                         <span className={stock === 0 ? 'text-red-500' : 'text-gray-400'}>
                           Stock: {stock}
@@ -214,11 +247,13 @@ export default function Pedido({
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-        <h3 className="font-semibold text-slate-900 mb-3 text-sm">Resumen del pedido</h3>
+        <h3 className="font-semibold text-slate-900 mb-3 text-sm">
+          {esVenta ? 'Resumen de la venta' : 'Resumen de la compra'}
+        </h3>
 
         {items.length === 0 ? (
           <div className="text-center text-gray-400 py-8 text-sm">
-            Aún no hay productos en el pedido.
+            Aún no hay productos en la {esVenta ? 'venta' : 'lista'}.
           </div>
         ) : (
           <ul className="flex flex-col gap-3">

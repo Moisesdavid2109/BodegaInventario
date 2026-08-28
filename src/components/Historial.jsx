@@ -15,7 +15,7 @@ function formatearFecha(iso) {
   }
 }
 
-export default function Historial({ pedidos = [], people = [], onVolver, onDeshacer }) {
+export default function Historial({ pedidos = [], clientes = [], onVolver, onDeshacer }) {
   const [filtro, setFiltro] = useState('todos'); // todos | venta | compra
 
   const visibles = useMemo(() => {
@@ -25,8 +25,8 @@ export default function Historial({ pedidos = [], people = [], onVolver, onDesha
 
   const nombrePersona = (id) => {
     if (!id) return '';
-    const p = (people || []).find(x => x.id === id);
-    return p ? p.name : '';
+    const c = (clientes || []).find(x => x.id === id);
+    return c ? c.nombre : '';
   };
 
   return (

@@ -49,8 +49,9 @@ export default function NuevoProducto({ onGuardar, onCancelar, editando = null }
 
   const previewPrecio = precio.trim() === '' ? '' : formatearMoneda(parseNumero(precio));
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault();
+    setError('');
     if (!nombre.trim()) return setError('Escribe el nombre del producto.');
 
     const precioNum = parseNumero(precio);
@@ -62,15 +63,20 @@ export default function NuevoProducto({ onGuardar, onCancelar, editando = null }
     const stockNum = stock.trim() === '' ? 0 : parseInt(String(stock).replace(/\D/g, ''), 10);
     if (Number.isNaN(stockNum) || stockNum < 0) return setError('Escribe una cantidad de stock válida.');
 
-    onGuardar({
-      id: editando?.id || null,
-      name: nombre.trim(),
-      price: precioNum,
-      costPrice: costPriceNum,
-      category: categoria,
-      image: imagen || null,
-      stock: stockNum,
-    });
+    try {
+      await onGuardar({
+        id: editando?.id || null,
+        name: nombre.trim(),
+        price: precioNum,
+        costPrice: costPriceNum,
+        category: categoria,
+        image: imagen || null,
+        stock: stockNum,
+      });
+    } catch (err) {
+      console.error('Error guardando producto:', err);
+      setError('Error al guardar: ' + (err.message || 'Error desconocido'));
+    }
   };
 
   const inputEstilos = "border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500";
